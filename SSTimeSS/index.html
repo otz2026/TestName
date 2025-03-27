@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Редактор турнирной таблицы</title>
+    <title>Редактор турнирной таблицы (Баскетбол)</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -65,6 +65,10 @@
             background-color: rgba(221,71,16,0.3);
         }
         
+        .non-editable {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
         button {
             background-color: #dd4710;
             color: white;
@@ -96,58 +100,6 @@
             background-color: #572d2c;
         }
         
-        .auto-refresh-toggle {
-            display: flex;
-            align-items: center;
-            margin-top: 15px;
-        }
-        
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 34px;
-            margin-left: 10px;
-        }
-        
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        input:checked + .slider {
-            background-color: #dd4710;
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(26px);
-        }
-        
         @media (max-width: 768px) {
             th, td {
                 padding: 12px;
@@ -163,7 +115,7 @@
 </head>
 <body>
     <div class="content">
-        <h2>Редактор турнирной таблицы</h2>
+        <h2>Редактор турнирной таблицы (Баскетбол)</h2>
         
         <div class="table-container">
             <table id="dataTable">
@@ -178,7 +130,6 @@
                         <th>Забито</th>
                         <th>Пропущено</th>
                         <th>+/-</th>
-                        <th>Очки</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -187,15 +138,7 @@
         
         <div>
             <button id="saveBtn">Сохранить изменения</button>
-            <button id="refreshBtn">Обновить сейчас</button>
-        </div>
-        
-        <div class="auto-refresh-toggle">
-            <span>Автообновление каждые 30 секунд:</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="autoRefreshToggle" checked>
-                <span class="slider"></span>
-            </label>
+            <button id="refreshBtn">Обновить данные</button>
         </div>
         
         <div id="statusMsg"></div>
@@ -207,12 +150,19 @@
             GITHUB_USER: "otz2026",
             REPO_NAME: "TestName",
             FILE_PATH: "SSTimeSS/tournament_data.json",
-            GITHUB_TOKEN: "",
-            AUTO_REFRESH_INTERVAL: 30000 // 30 секунд
+            GITHUB_TOKEN: ""
         };
 
         let tableData = [];
-        let autoRefreshInterval = null;
+
+        // Функция для расчета показателей
+        function calculateTeamStats(team) {
+            // Расчет показателей
+            team.percentage = team.games > 0 ? (team.wins / team.games).toFixed(3) : 0;
+            team.difference = (team.scored || 0) - (team.conceded || 0);
+            
+            return team;
+        }
 
         // Функция загрузки данных с GitHub
         async function loadData() {
@@ -297,19 +247,29 @@
             }
         }
 
-        // Вспомогательные функции
+        // Подготовка данных
         function prepareData() {
             tableData.forEach(team => {
-                team.percentage = team.games > 0 ? Math.round((team.wins / team.games) * 100) : 0;
-                team.difference = (team.scored || 0) - (team.conceded || 0);
+                calculateTeamStats(team);
             });
             sortTeams();
         }
 
+        // Сортировка команд
         function sortTeams() {
             tableData.sort((a, b) => {
-                if (b.points !== a.points) return b.points - a.points;
-                return b.difference - a.difference;
+                // 1. По проценту побед
+                if (parseFloat(b.percentage) !== parseFloat(a.percentage)) {
+                    return parseFloat(b.percentage) - parseFloat(a.percentage);
+                }
+                
+                // 2. По разнице очков
+                if (b.difference !== a.difference) {
+                    return b.difference - a.difference;
+                }
+                
+                // 3. По количеству забитых очков
+                return b.scored - a.scored;
             });
             
             tableData.forEach((team, index) => {
@@ -317,12 +277,13 @@
             });
         }
 
+        // Отрисовка таблицы
         function renderTable() {
             const tbody = document.getElementById("tableBody");
             tbody.innerHTML = "";
             
             if (tableData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;">Нет данных для отображения</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Нет данных для отображения</td></tr>`;
                 return;
             }
             
@@ -330,24 +291,24 @@
                 const row = document.createElement("tr");
                 
                 row.innerHTML += `
-                    <td>${team.place}</td>
-                    <td>
+                    <td class="non-editable">${team.place}</td>
+                    <td class="non-editable">
                         <img src="${team.logo || ''}" class="team-logo">
                         ${team.team || "Команда"}
                     </td>
                     <td class="editable" data-field="games">${team.games || 0}</td>
                     <td class="editable" data-field="wins">${team.wins || 0}</td>
                     <td class="editable" data-field="losses">${team.losses || 0}</td>
-                    <td>${team.percentage || 0}</td>
+                    <td class="non-editable">${team.percentage || 0}</td>
                     <td class="editable" data-field="scored">${team.scored || 0}</td>
                     <td class="editable" data-field="conceded">${team.conceded || 0}</td>
-                    <td>${team.difference || 0}</td>
-                    <td class="editable" data-field="points">${team.points || 0}</td>
+                    <td class="non-editable">${team.difference || 0}</td>
                 `;
                 
                 tbody.appendChild(row);
             });
             
+            // Обработчики для редактируемых ячеек
             document.querySelectorAll(".editable").forEach(cell => {
                 cell.addEventListener("click", function() {
                     const field = this.dataset.field;
@@ -367,10 +328,8 @@
                         const newValue = parseInt(input.value) || 0;
                         tableData[teamId][field] = newValue;
                         
-                        if (["wins", "games", "scored", "conceded"].includes(field)) {
-                            updateCalculatedFields(teamId);
-                        }
-                        
+                        calculateTeamStats(tableData[teamId]);
+                        sortTeams();
                         renderTable();
                     };
                     
@@ -380,62 +339,82 @@
             });
         }
 
-        function updateCalculatedFields(teamIndex) {
-            const team = tableData[teamIndex];
-            team.percentage = team.games > 0 ? Math.round((team.wins / team.games) * 100) : 0;
-            team.difference = (team.scored || 0) - (team.conceded || 0);
-            sortTeams();
-        }
-
+        // Тестовые данные (все нули)
         function getDefaultData() {
-            return [{
-                id: 1,
-                team: "Пример команды",
-                games: 0,
-                wins: 0,
-                losses: 0,
-                scored: 0,
-                conceded: 0,
-                points: 0,
-                place: 1,
-                percentage: 0,
-                difference: 0
-            }];
+            return [
+                {
+                    "id": 1,
+                    "team": "BULLDOGS",
+                    "logo": "/otz2025/img/BULLDOGS.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0,
+                    "percentage": 0,
+                    "difference": 0,
+                    "place": 1
+                },
+                {
+                    "id": 2,
+                    "team": "TEXAS NERS",
+                    "logo": "/otz2025/img/TN.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0,
+                    "percentage": 0,
+                    "difference": 0,
+                    "place": 2
+                },
+                {
+                    "id": 3,
+                    "team": "RWE",
+                    "logo": "/otz2025/img/RWE.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0,
+                    "percentage": 0,
+                    "difference": 0,
+                    "place": 3
+                },
+                {
+                    "id": 4,
+                    "team": "KITTY BOYS",
+                    "logo": "/otz2025/img/KITTY BOYS.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0,
+                    "percentage": 0,
+                    "difference": 0,
+                    "place": 4
+                },
+                {
+                    "id": 5,
+                    "team": "PAW PATROL",
+                    "logo": "/otz2025/img/PPATROL.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0,
+                    "percentage": 0,
+                    "difference": 0,
+                    "place": 5
+                }
+            ];
         }
 
+        // Отображение статуса
         function showStatus(message, type) {
             const statusElement = document.getElementById("statusMsg");
             statusElement.textContent = message;
             statusElement.className = type;
-        }
-
-        // Управление автообновлением
-        function setupAutoRefresh() {
-            const toggle = document.getElementById("autoRefreshToggle");
-            
-            toggle.addEventListener("change", function() {
-                if (this.checked) {
-                    startAutoRefresh();
-                } else {
-                    stopAutoRefresh();
-                }
-            });
-            
-            startAutoRefresh();
-        }
-
-        function startAutoRefresh() {
-            stopAutoRefresh();
-            autoRefreshInterval = setInterval(loadData, CONFIG.AUTO_REFRESH_INTERVAL);
-            console.log("Автообновление включено");
-        }
-
-        function stopAutoRefresh() {
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-                autoRefreshInterval = null;
-                console.log("Автообновление выключено");
-            }
         }
 
         // Инициализация
@@ -443,7 +422,6 @@
             loadData();
             document.getElementById("saveBtn").addEventListener("click", saveData);
             document.getElementById("refreshBtn").addEventListener("click", loadData);
-            setupAutoRefresh();
         });
     </script>
 </body>
