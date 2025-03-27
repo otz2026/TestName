@@ -388,12 +388,12 @@
         /* Стили для ссылок команд */
         .team-cell a, .team-name a {
             color: white;
-            text-decoration: none; /* Убираем подчеркивание */
+            text-decoration: none;
         }
 
         .team-cell a:hover, .team-name a:hover {
-            color: white; /* Оставляем цвет текста белым при наведении */
-            text-decoration: none; /* Убираем подчеркивание при наведении */
+            color: white;
+            text-decoration: none;
         }
 
         @media (max-width: 768px) {
@@ -492,83 +492,8 @@
                         <th>Очки</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Строки таблицы -->
-                    <tr>
-                        <td>1</td>
-                        <td class="team-cell">
-                            <img src="/otz2025/img/BULLDOGS.png" alt="BULLDOGS2" class="team-logo">
-                            <a href="/otz2025/teams/Bulldogs">BULLDOGS</a>
-                        </td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td class="team-cell">
-                            <img src="/otz2025/img/TN.png" alt="TN" class="team-logo">
-                            <a href="/otz2025/teams/TN">TEXAS NERS</a>
-                        </td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td class="team-cell">
-                            <img src="/otz2025/img/RWE.png" alt="RWE" class="team-logo">
-                            <a href="/otz2025/teams/RWE">RWE</a>
-                        </td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td class="team-cell">
-                            <img src="/otz2025/img/KITTY BOYS.png" alt="Kitty Boys" class="team-logo">
-                            <a href="/otz2025/teams/KittyBoys">KITTY BOYS</a>
-                        </td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td class="team-cell">
-                            <img src="/otz2025/img/PPATROL.png" alt="PPATROL" class="team-logo">
-                            <a href="/otz2025/teams/PawPatrol">PAW PATROL</a>
-                        </td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                    </tr>
+                <tbody id="tournamentTableBody">
+                    <!-- Данные будут загружаться динамически -->
                 </tbody>
             </table>
         </div>
@@ -593,20 +518,170 @@
     </footer>
 
     <script>
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            header.classList.toggle('scrolled', window.scrollY > 50);
-        });
+        // Конфигурация
+        const CONFIG = {
+            JSON_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/tournament_data.json",
+            UPDATE_INTERVAL: 30000 // 30 секунд
+        };
 
-        // Добавляем обработчик события для показа слова "Абоюдно"
-        const footerText = document.querySelector('footer p');
-        const hiddenLink = document.querySelector('footer .hidden');
+        let refreshInterval;
 
-        footerText.addEventListener('click', () => {
-            hiddenLink.classList.remove('hidden'); // Показываем слово
-            setTimeout(() => {
-                hiddenLink.classList.add('hidden'); // Скрываем слово через 5 секунд
-            }, 5000);
+        // Функция загрузки данных из JSON
+        async function loadTournamentData() {
+            try {
+                const response = await fetch(`${CONFIG.JSON_URL}?t=${Date.now()}`);
+                if (!response.ok) throw new Error('Ошибка загрузки данных');
+                return await response.json();
+            } catch (error) {
+                console.error('Ошибка загрузки турнирной таблицы:', error);
+                return getDefaultData(); // Возвращаем тестовые данные при ошибке
+            }
+        }
+
+        // Тестовые данные
+        function getDefaultData() {
+            return [
+                {
+                    "id": "Bulldogs",
+                    "team": "BULLDOGS",
+                    "logo": "/otz2025/img/BULLDOGS.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0
+                },
+                {
+                    "id": "TN",
+                    "team": "TEXAS NERS",
+                    "logo": "/otz2025/img/TN.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0
+                },
+                {
+                    "id": "RWE",
+                    "team": "RWE",
+                    "logo": "/otz2025/img/RWE.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0
+                },
+                {
+                    "id": "KittyBoys",
+                    "team": "KITTY BOYS",
+                    "logo": "/otz2025/img/KITTY BOYS.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0
+                },
+                {
+                    "id": "PawPatrol",
+                    "team": "PAW PATROL",
+                    "logo": "/otz2025/img/PPATROL.png",
+                    "games": 0,
+                    "wins": 0,
+                    "losses": 0,
+                    "scored": 0,
+                    "conceded": 0
+                }
+            ];
+        }
+
+        // Функция обновления таблицы
+        async function updateTournamentTable() {
+            const data = await loadTournamentData();
+            if (!data) return;
+
+            const tableBody = document.getElementById('tournamentTableBody');
+            if (!tableBody) return;
+
+            // Очищаем таблицу
+            tableBody.innerHTML = '';
+
+            // Рассчитываем показатели для каждой команды
+            const processedData = data.map(team => {
+                const percentage = team.games > 0 ? ((team.wins / team.games) * 100).toFixed(1) : 0;
+                const difference = (team.scored || 0) - (team.conceded || 0);
+                const points = (team.wins || 0) * 2 + (team.losses || 0) * 1;
+                
+                return {
+                    ...team,
+                    percentage,
+                    difference,
+                    points
+                };
+            });
+
+            // Сортируем команды по правилам FIBA
+            processedData.sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.difference !== a.difference) return b.difference - a.difference;
+                return b.scored - a.scored;
+            });
+
+            // Заполняем таблицу данными
+            processedData.forEach((team, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td class="team-cell">
+                        <img src="${team.logo || ''}" class="team-logo">
+                        <a href="/otz2025/teams/${team.id}">${team.team}</a>
+                    </td>
+                    <td>${team.games || 0}</td>
+                    <td>${team.wins || 0}</td>
+                    <td>${team.losses || 0}</td>
+                    <td>${team.percentage}</td>
+                    <td>${team.scored || 0}</td>
+                    <td>${team.conceded || 0}</td>
+                    <td>${team.difference}</td>
+                    <td>${team.points}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Функция запуска автоматического обновления
+        function startAutoRefresh() {
+            // Останавливаем предыдущий интервал, если он был
+            if (refreshInterval) clearInterval(refreshInterval);
+            
+            // Запускаем обновление сразу
+            updateTournamentTable();
+            
+            // Устанавливаем интервал для периодического обновления
+            refreshInterval = setInterval(updateTournamentTable, CONFIG.UPDATE_INTERVAL);
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', () => {
+            // Запускаем автоматическое обновление таблицы
+            startAutoRefresh();
+            
+            // Оригинальные обработчики событий
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('header');
+                header.classList.toggle('scrolled', window.scrollY > 50);
+            });
+
+            const footerText = document.querySelector('footer p');
+            const hiddenLink = document.querySelector('footer .hidden');
+
+            if (footerText && hiddenLink) {
+                footerText.addEventListener('click', () => {
+                    hiddenLink.classList.remove('hidden');
+                    setTimeout(() => {
+                        hiddenLink.classList.add('hidden');
+                    }, 5000);
+                });
+            }
         });
     </script>
 </body>
