@@ -226,7 +226,6 @@
                 padding: 3px;
             }
         }
-        
     </style>
 </head>
 <body>
@@ -271,28 +270,31 @@
     </div>
 
     <script>
-        // URL вашего JSON файла
-        const DATA_FILE_URL = 'https://otz2026.github.io/TestName/SSTimeSS/tournament_data.json';
-        
-        // Настройки для GitHub API
-        const GITHUB_REPO = 'otz2026/TestName'; // Ваш репозиторий
-        const GITHUB_PATH = 'SSTimeSS/tournament_data.json'; // Путь к файлу
-        const GITHUB_TOKEN = ''; // Нужно будет ввести ваш токен
-        
+        // Конфигурация (измените эти значения)
+        const CONFIG = {
+            JSON_URL: 'https://otz2026.github.io/TestName/SSTimeSS/tournament_data.json',
+            GITHUB_REPO: 'otz2026/TestName',
+            GITHUB_PATH: 'SSTimeSS/tournament_data.json'
+        };
+
         let tableData = [];
+        let githubToken = '';
 
         // Загрузка данных из JSON файла
         async function loadData() {
+            showStatus('Загрузка данных...', 'info');
+            
             try {
-                const response = await fetch(DATA_FILE_URL);
-                if (!response.ok) throw new Error('Не удалось загрузить данные');
+                const response = await fetch(CONFIG.JSON_URL);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 tableData = await response.json();
                 prepareData();
                 renderTable();
+                showStatus('Данные успешно загружены', 'success');
             } catch (error) {
                 showStatus('Ошибка загрузки данных: ' + error.message, 'error');
-                console.error('Ошибка загрузки данных:', error);
+                console.error('Ошибка загрузки:', error);
             }
         }
 
@@ -313,11 +315,7 @@
         // Сортировка команд по очкам и разнице мячей
         function sortTeams() {
             tableData.sort((a, b) => {
-                // Сначала по очкам (по убыванию)
-                if (b.points !== a.points) {
-                    return b.points - a.points;
-                }
-                // При равенстве очков - по разнице мячей
+                if (b.points !== a.points) return b.points - a.points;
                 return b.difference - a.difference;
             });
             
@@ -350,13 +348,9 @@
                 `;
                 row.appendChild(teamCell);
                 
-                // Игры (редактируемое)
+                // Остальные ячейки
                 createEditableCell(row, team, 'games');
-                
-                // Победы (редактируемое)
                 createEditableCell(row, team, 'wins');
-                
-                // Поражения (редактируемое)
                 createEditableCell(row, team, 'losses');
                 
                 // Процент побед (не редактируемое)
@@ -365,10 +359,7 @@
                 percentCell.className = 'non-editable';
                 row.appendChild(percentCell);
                 
-                // Забито (редактируемое)
                 createEditableCell(row, team, 'scored');
-                
-                // Пропущено (редактируемое)
                 createEditableCell(row, team, 'conceded');
                 
                 // Разница мячей (не редактируемое)
@@ -377,7 +368,6 @@
                 diffCell.className = 'non-editable';
                 row.appendChild(diffCell);
                 
-                // Очки (редактируемое)
                 createEditableCell(row, team, 'points');
                 
                 tbody.appendChild(row);
@@ -436,49 +426,45 @@
 
         // Обновление вычисляемых полей
         function updateCalculatedFields(team) {
-            // Процент побед
             team.percentage = team.games > 0 ? Math.round((team.wins / team.games) * 100) : 0;
-            
-            // Разница мячей
             team.difference = team.scored - team.conceded;
         }
 
         // Сохранение данных обратно в JSON файл на GitHub
         async function saveDataToGitHub() {
-            if (!GITHUB_TOKEN) {
-                const token = prompt('Введите ваш GitHub Personal Access Token:');
-                if (!token) return;
-                GITHUB_TOKEN = token;
+            if (!githubToken) {
+                githubToken = prompt('Введите ваш GitHub Personal Access Token для сохранения изменений:');
+                if (!githubToken) {
+                    showStatus('Сохранение отменено', 'error');
+                    return;
+                }
             }
 
             showStatus('Сохранение данных...', 'info');
 
             try {
-                // 1. Сначала получаем текущий SHA файла
+                // 1. Получаем текущий SHA файла
                 const getResponse = await fetch(
-                    `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`,
+                    `https://api.github.com/repos/${CONFIG.GITHUB_REPO}/contents/${CONFIG.GITHUB_PATH}`,
                     {
                         headers: {
-                            'Authorization': `token ${GITHUB_TOKEN}`,
+                            'Authorization': `token ${githubToken}`,
                             'Accept': 'application/vnd.github.v3+json'
                         }
                     }
                 );
 
-                if (!getResponse.ok) {
-                    throw new Error('Не удалось получить текущую версию файла');
-                }
-
+                if (!getResponse.ok) throw new Error('Не удалось получить текущую версию файла');
                 const fileInfo = await getResponse.json();
                 const sha = fileInfo.sha;
 
                 // 2. Отправляем обновленные данные
                 const updateResponse = await fetch(
-                    `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`,
+                    `https://api.github.com/repos/${CONFIG.GITHUB_REPO}/contents/${CONFIG.GITHUB_PATH}`,
                     {
                         method: 'PUT',
                         headers: {
-                            'Authorization': `token ${GITHUB_TOKEN}`,
+                            'Authorization': `token ${githubToken}`,
                             'Content-Type': 'application/json',
                             'Accept': 'application/vnd.github.v3+json'
                         },
@@ -490,18 +476,14 @@
                     }
                 );
 
-                if (!updateResponse.ok) {
-                    throw new Error('Не удалось сохранить изменения на GitHub');
-                }
-
+                if (!updateResponse.ok) throw new Error('Не удалось сохранить изменения');
                 showStatus('Данные успешно сохранены на GitHub!', 'success');
-                
-                // 3. Перезагружаем данные после сохранения
-                setTimeout(loadData, 2000);
+                setTimeout(loadData, 2000); // Перезагружаем данные
                 
             } catch (error) {
                 showStatus('Ошибка при сохранении: ' + error.message, 'error');
                 console.error('Ошибка сохранения:', error);
+                githubToken = ''; // Сбрасываем токен при ошибке
             }
         }
 
@@ -515,7 +497,7 @@
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            // Загрузка данных из JSON файла
+            // Загрузка данных
             loadData();
             
             // Обработчик кнопки сохранения
