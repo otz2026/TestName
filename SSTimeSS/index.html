@@ -226,6 +226,7 @@
                 padding: 3px;
             }
         }
+        
     </style>
 </head>
 <body>
@@ -265,26 +266,33 @@
             </table>
         </div>
 
-        <button id="saveButton">Сохранить изменения</button>
+        <button id="saveButton">Применить изменения</button>
+        <div id="statusMessage" style="margin-top: 10px; color: #dd4710;"></div>
     </div>
 
     <script>
-        // Путь к JSON файлу с данными
-        const DATA_FILE_PATH = '/TestName/SSTimeSS/tournament_data.json';
+        // URL вашего JSON файла
+        const DATA_FILE_URL = 'https://otz2026.github.io/TestName/SSTimeSS/tournament_data.json';
+        
+        // Настройки для GitHub API
+        const GITHUB_REPO = 'otz2026/TestName'; // Ваш репозиторий
+        const GITHUB_PATH = 'SSTimeSS/tournament_data.json'; // Путь к файлу
+        const GITHUB_TOKEN = ''; // Нужно будет ввести ваш токен
+        
         let tableData = [];
 
         // Загрузка данных из JSON файла
         async function loadData() {
             try {
-                const response = await fetch(DATA_FILE_PATH);
+                const response = await fetch(DATA_FILE_URL);
                 if (!response.ok) throw new Error('Не удалось загрузить данные');
                 
                 tableData = await response.json();
                 prepareData();
                 renderTable();
             } catch (error) {
+                showStatus('Ошибка загрузки данных: ' + error.message, 'error');
                 console.error('Ошибка загрузки данных:', error);
-                alert('Ошибка загрузки данных. Проверьте консоль для подробностей.');
             }
         }
 
@@ -296,13 +304,22 @@
                 
                 // Разница мячей
                 team.difference = team.scored - team.conceded;
-                
-                // Очки (2 за победу)
-                team.points = team.wins * 2;
             });
             
-            // Сортировка по очкам и разнице мячей
-            tableData.sort((a, b) => b.points - a.points || b.difference - a.difference);
+            // Сортировка команд
+            sortTeams();
+        }
+
+        // Сортировка команд по очкам и разнице мячей
+        function sortTeams() {
+            tableData.sort((a, b) => {
+                // Сначала по очкам (по убыванию)
+                if (b.points !== a.points) {
+                    return b.points - a.points;
+                }
+                // При равенстве очков - по разнице мячей
+                return b.difference - a.difference;
+            });
             
             // Обновление позиций
             tableData.forEach((team, index) => {
@@ -321,25 +338,46 @@
                 // Место (не редактируемое)
                 const placeCell = document.createElement('td');
                 placeCell.textContent = team.place;
+                placeCell.className = 'non-editable';
                 row.appendChild(placeCell);
                 
                 // Команда (не редактируемая)
                 const teamCell = document.createElement('td');
-                teamCell.className = 'team-cell';
+                teamCell.className = 'team-cell non-editable';
                 teamCell.innerHTML = `
                     <img src="${team.logo}" alt="${team.team}" class="team-logo">
-                    <a href="/otz2025/teams/${team.team.replace(' ', '')}">${team.team}</a>
+                    <span>${team.team}</span>
                 `;
                 row.appendChild(teamCell);
                 
-                // Остальные ячейки (редактируемые)
+                // Игры (редактируемое)
                 createEditableCell(row, team, 'games');
+                
+                // Победы (редактируемое)
                 createEditableCell(row, team, 'wins');
+                
+                // Поражения (редактируемое)
                 createEditableCell(row, team, 'losses');
-                createEditableCell(row, team, 'percentage');
+                
+                // Процент побед (не редактируемое)
+                const percentCell = document.createElement('td');
+                percentCell.textContent = team.percentage;
+                percentCell.className = 'non-editable';
+                row.appendChild(percentCell);
+                
+                // Забито (редактируемое)
                 createEditableCell(row, team, 'scored');
+                
+                // Пропущено (редактируемое)
                 createEditableCell(row, team, 'conceded');
-                createEditableCell(row, team, 'difference');
+                
+                // Разница мячей (не редактируемое)
+                const diffCell = document.createElement('td');
+                diffCell.textContent = team.difference;
+                diffCell.className = 'non-editable';
+                row.appendChild(diffCell);
+                
+                // Очки (редактируемое)
                 createEditableCell(row, team, 'points');
                 
                 tbody.appendChild(row);
@@ -389,29 +427,90 @@
                 updateCalculatedFields(team);
             }
             
-            // Если изменились важные поля - пересортировка
-            if (['wins', 'games', 'scored', 'conceded'].includes(field)) {
-                prepareData();
+            // Сортировка при изменении важных полей
+            if (['wins', 'games', 'scored', 'conceded', 'points'].includes(field)) {
+                sortTeams();
                 renderTable();
             }
         }
 
-        // Обновление вычисляемых полей для команды
+        // Обновление вычисляемых полей
         function updateCalculatedFields(team) {
             // Процент побед
             team.percentage = team.games > 0 ? Math.round((team.wins / team.games) * 100) : 0;
             
             // Разница мячей
             team.difference = team.scored - team.conceded;
-            
-            // Очки (2 за победу)
-            team.points = team.wins * 2;
         }
 
-        // Сохранение данных (в localStorage)
-        function saveData() {
-            localStorage.setItem('tournamentData', JSON.stringify(tableData));
-            alert('Изменения сохранены в браузере!');
+        // Сохранение данных обратно в JSON файл на GitHub
+        async function saveDataToGitHub() {
+            if (!GITHUB_TOKEN) {
+                const token = prompt('Введите ваш GitHub Personal Access Token:');
+                if (!token) return;
+                GITHUB_TOKEN = token;
+            }
+
+            showStatus('Сохранение данных...', 'info');
+
+            try {
+                // 1. Сначала получаем текущий SHA файла
+                const getResponse = await fetch(
+                    `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`,
+                    {
+                        headers: {
+                            'Authorization': `token ${GITHUB_TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    }
+                );
+
+                if (!getResponse.ok) {
+                    throw new Error('Не удалось получить текущую версию файла');
+                }
+
+                const fileInfo = await getResponse.json();
+                const sha = fileInfo.sha;
+
+                // 2. Отправляем обновленные данные
+                const updateResponse = await fetch(
+                    `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_PATH}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${GITHUB_TOKEN}`,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/vnd.github.v3+json'
+                        },
+                        body: JSON.stringify({
+                            message: 'Обновление турнирной таблицы',
+                            content: btoa(unescape(encodeURIComponent(JSON.stringify(tableData, null, 2))),
+                            sha: sha
+                        })
+                    }
+                );
+
+                if (!updateResponse.ok) {
+                    throw new Error('Не удалось сохранить изменения на GitHub');
+                }
+
+                showStatus('Данные успешно сохранены на GitHub!', 'success');
+                
+                // 3. Перезагружаем данные после сохранения
+                setTimeout(loadData, 2000);
+                
+            } catch (error) {
+                showStatus('Ошибка при сохранении: ' + error.message, 'error');
+                console.error('Ошибка сохранения:', error);
+            }
+        }
+
+        // Показать статусное сообщение
+        function showStatus(message, type) {
+            const statusElement = document.getElementById('statusMessage');
+            statusElement.textContent = message;
+            statusElement.style.color = type === 'error' ? '#ff3333' : 
+                                      type === 'success' ? '#33ff33' : '#dd4710';
         }
 
         // Инициализация при загрузке страницы
@@ -420,7 +519,7 @@
             loadData();
             
             // Обработчик кнопки сохранения
-            document.getElementById('saveButton').addEventListener('click', saveData);
+            document.getElementById('saveButton').addEventListener('click', saveDataToGitHub);
             
             // Обработчик скролла для шапки
             window.addEventListener('scroll', () => {
