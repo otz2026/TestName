@@ -1,1 +1,564 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки турнирной таблицы</title>
+    <style>
+        /* Стили полностью из вашего исходного кода */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2a2a2a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 20px;
+            z-index: 1000;
+            transition: background-color 0.3s ease;
+        }
+
+        header.scrolled {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+
+        header .logo {
+            position: absolute;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+
+        header nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        header nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 18px;
+            transition: color 0.3s ease;
+        }
+
+        header nav a:hover {
+            color: #ccc;
+        }
+
+        .content {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex: 1;
+            box-sizing: border-box;
+            text-align: center;
+            margin-top: 100px;
+            width: 100%;
+        }
+
+        .content h2 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            padding-top: 20px;
+            border-top: 1px solid black;
+            position: relative;
+            display: inline-block;
+            padding: 15px 30px;
+        }
+
+        .content h2::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #dd4710;
+            z-index: -1;
+            border-radius: 5px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+            margin-bottom: 40px;
+            width: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        th:last-child, td:last-child {
+            border-right: none;
+        }
+
+        th {
+            background-color: #dd4710;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .team-logo {
+            width: 30px;
+            height: 30px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .team-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .team-cell a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .editable {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .editable:hover {
+            background-color: rgba(221, 71, 16, 0.3);
+        }
+
+        .editable-input {
+            width: 50px;
+            text-align: center;
+            background: transparent;
+            border: 1px solid #dd4710;
+            color: white;
+            border-radius: 3px;
+            padding: 5px;
+        }
+
+        button {
+            background-color: #dd4710;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #ff5c2b;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                padding: 10px;
+            }
+
+            header .logo {
+                position: static;
+                margin-bottom: 10px;
+                text-align: center;
+            }
+
+            header nav {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .content {
+                margin-top: 80px;
+            }
+
+            .content h2 {
+                font-size: 28px;
+                padding: 10px 20px;
+            }
+
+            th, td {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .team-logo {
+                width: 24px;
+                height: 24px;
+            }
+
+            .editable-input {
+                width: 40px;
+                padding: 3px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header id="header">
+        <div class="logo">OVER TIME ZWENIGOROD</div>
+        <nav>
+            <a href="/otz2025/">Главная</a>
+            <a href="/otz2025/news">Новости</a>
+            <a href="/otz2025/table">Соревнования</a>
+            <a href="/otz2025/reward">Награды</a>
+            <a href="/otz2025/settings">Настройки</a>
+        </nav>
+    </header>
+
+    <div class="content">
+        <h2>Настройки турнирной таблицы</h2>
+
+        <div class="table-container">
+            <table id="dataTable">
+                <thead>
+                    <tr>
+                        <th>Место</th>
+                        <th>Команда</th>
+                        <th>И</th>
+                        <th>В</th>
+                        <th>П</th>
+                        <th>%</th>
+                        <th>Забито</th>
+                        <th>Пропущено</th>
+                        <th>+/-</th>
+                        <th>Очки</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Данные будут заполнены JavaScript -->
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <button id="saveButton">Сохранить данные</button>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+        </div>
+    </div>
+
+    <script>
+        // Путь к JSON файлу с данными (по умолчанию)
+        const DATA_FILE_PATH = 'SSTimeSS/tournament_data.json';
+        
+        // Инициализация данных
+        let tableData = [];
+
+        // Загрузка данных из JSON файла
+        async function loadData() {
+            try {
+                // Пробуем загрузить из указанного файла
+                const response = await fetch(DATA_FILE_PATH);
+                
+                if (!response.ok) {
+                    throw new Error('Файл данных не найден, используются начальные значения');
+                }
+                
+                tableData = await response.json();
+                initializeTeams();
+                sortTeams();
+                renderTable();
+            } catch (error) {
+                console.error(error.message);
+                // Если файл не найден, используем начальные данные
+                initializeDefaultData();
+                sortTeams();
+                renderTable();
+            }
+        }
+
+        // Инициализация начальных данных
+        function initializeDefaultData() {
+            tableData = [
+                {
+                    id: 1,
+                    team: "BULLDOGS",
+                    logo: "/otz2025/img/BULLDOGS.png",
+                    games: 0,
+                    wins: 0,
+                    losses: 0,
+                    percentage: 0,
+                    scored: 0,
+                    conceded: 0,
+                    difference: 0,
+                    points: 0
+                },
+                {
+                    id: 2,
+                    team: "TEXAS NERS",
+                    logo: "/otz2025/img/TN.png",
+                    games: 0,
+                    wins: 0,
+                    losses: 0,
+                    percentage: 0,
+                    scored: 0,
+                    conceded: 0,
+                    difference: 0,
+                    points: 0
+                },
+                {
+                    id: 3,
+                    team: "RWE",
+                    logo: "/otz2025/img/RWE.png",
+                    games: 0,
+                    wins: 0,
+                    losses: 0,
+                    percentage: 0,
+                    scored: 0,
+                    conceded: 0,
+                    difference: 0,
+                    points: 0
+                },
+                {
+                    id: 4,
+                    team: "KITTY BOYS",
+                    logo: "/otz2025/img/KITTY BOYS.png",
+                    games: 0,
+                    wins: 0,
+                    losses: 0,
+                    percentage: 0,
+                    scored: 0,
+                    conceded: 0,
+                    difference: 0,
+                    points: 0
+                },
+                {
+                    id: 5,
+                    team: "PAW PATROL",
+                    logo: "/otz2025/img/PPATROL.png",
+                    games: 0,
+                    wins: 0,
+                    losses: 0,
+                    percentage: 0,
+                    scored: 0,
+                    conceded: 0,
+                    difference: 0,
+                    points: 0
+                }
+            ];
+        }
+
+        // Инициализация команд (если в загруженных данных нет всех полей)
+        function initializeTeams() {
+            tableData.forEach(team => {
+                if (typeof team.percentage === 'undefined') {
+                    team.percentage = team.games > 0 ? Math.round((team.wins / team.games) * 100) : 0;
+                }
+                if (typeof team.difference === 'undefined') {
+                    team.difference = team.scored - team.conceded;
+                }
+                if (typeof team.points === 'undefined') {
+                    team.points = team.wins * 2;
+                }
+            });
+        }
+
+        // Сортировка команд по очкам (по убыванию)
+        function sortTeams() {
+            tableData.sort((a, b) => b.points - a.points);
+            tableData.forEach((team, index) => {
+                team.place = index + 1;
+            });
+        }
+
+        // Отображение таблицы
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            tableData.forEach((team, index) => {
+                const row = document.createElement('tr');
+                
+                // Место
+                const placeCell = document.createElement('td');
+                placeCell.textContent = team.place;
+                row.appendChild(placeCell);
+                
+                // Команда
+                const teamCell = document.createElement('td');
+                teamCell.className = 'team-cell';
+                teamCell.innerHTML = `
+                    <img src="${team.logo}" alt="${team.team}" class="team-logo">
+                    <a href="/otz2025/teams/${team.team.replace(' ', '')}">${team.team}</a>
+                `;
+                row.appendChild(teamCell);
+                
+                // Остальные ячейки (редактируемые)
+                createEditableCell(row, team, 'games');
+                createEditableCell(row, team, 'wins');
+                createEditableCell(row, team, 'losses');
+                createEditableCell(row, team, 'percentage');
+                createEditableCell(row, team, 'scored');
+                createEditableCell(row, team, 'conceded');
+                createEditableCell(row, team, 'difference');
+                createEditableCell(row, team, 'points');
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Создание редактируемой ячейки
+        function createEditableCell(row, team, field) {
+            const cell = document.createElement('td');
+            cell.className = 'editable';
+            cell.textContent = team[field];
+            cell.dataset.field = field;
+            cell.dataset.index = team.place - 1;
+            
+            cell.addEventListener('click', function() {
+                const value = team[field];
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.className = 'editable-input';
+                input.value = value;
+                
+                cell.innerHTML = '';
+                cell.appendChild(input);
+                input.focus();
+                
+                input.addEventListener('blur', function() {
+                    saveCellValue(cell, input.value);
+                });
+                
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        saveCellValue(cell, input.value);
+                    }
+                });
+            });
+            
+            row.appendChild(cell);
+        }
+
+        // Сохранение значения ячейки
+        function saveCellValue(cell, value) {
+            const index = cell.dataset.index;
+            const field = cell.dataset.field;
+            
+            tableData[index][field] = Number(value);
+            cell.textContent = value;
+            
+            // Пересчет зависимых полей
+            if (field === 'wins' || field === 'games' || field === 'scored' || field === 'conceded') {
+                updateCalculatedFields(index);
+            }
+            
+            // Если изменились очки - сортируем команды
+            if (field === 'points' || field === 'wins') {
+                sortTeams();
+                renderTable();
+            }
+        }
+
+        // Обновление вычисляемых полей
+        function updateCalculatedFields(index) {
+            const team = tableData[index];
+            
+            // Процент побед
+            if (team.games > 0) {
+                team.percentage = Math.round((team.wins / team.games) * 100);
+            } else {
+                team.percentage = 0;
+            }
+            
+            // Разница мячей
+            team.difference = team.scored - team.conceded;
+            
+            // Очки (2 за победу)
+            team.points = team.wins * 2;
+        }
+
+        // Сохранение данных в JSON файл
+        function saveData() {
+            const dataStr = JSON.stringify(tableData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'tournament_data.json';
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 0);
+        }
+
+        // Загрузка данных из выбранного файла
+        function loadFromFile(file) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    tableData = JSON.parse(e.target.result);
+                    initializeTeams();
+                    sortTeams();
+                    renderTable();
+                    alert('Данные успешно загружены!');
+                } catch (error) {
+                    alert('Ошибка при чтении файла: ' + error.message);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Автоматическая загрузка данных при открытии страницы
+            loadData();
+            
+            // Обработчики кнопок
+            document.getElementById('saveButton').addEventListener('click', saveData);
+            
+            document.getElementById('fileInput').addEventListener('change', function(e) {
+                if (e.target.files.length > 0) {
+                    loadFromFile(e.target.files[0]);
+                }
+            });
+            
+            // Обработчик скролла для шапки
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('header');
+                header.classList.toggle('scrolled', window.scrollY > 50);
+            });
+        });
+    </script>
+</body>
+</html>
