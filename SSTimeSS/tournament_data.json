@@ -4,64 +4,79 @@
     "team": "BULLDOGS",
     "logo": "/otz2025/img/BULLDOGS.png",
     "games": 5,
-    "wins": 3,
-    "losses": 2,
-    "scored": 45,
-    "conceded": 32,
-    "percentage": "0.600",
-    "difference": 13,
-    "place": 1
+    "wins": 4,
+    "losses": 1,
+    "scored": 420,
+    "conceded": 380,
+    "headToHead": {
+      "2": 1,
+      "3": 1,
+      "4": 1,
+      "5": 1
+    }
   },
   {
     "id": 2,
     "team": "TEXAS NERS",
     "logo": "/otz2025/img/TN.png",
-    "games": 0,
-    "wins": 0,
-    "losses": 0,
-    "scored": 0,
-    "conceded": 0,
-    "percentage": 0,
-    "difference": 0,
-    "place": 2
+    "games": 5,
+    "wins": 3,
+    "losses": 2,
+    "scored": 400,
+    "conceded": 390,
+    "headToHead": {
+      "1": 0,
+      "3": 1,
+      "4": 1,
+      "5": 1
+    }
   },
   {
     "id": 3,
     "team": "RWE",
     "logo": "/otz2025/img/RWE.png",
-    "games": 0,
-    "wins": 0,
-    "losses": 0,
-    "scored": 0,
-    "conceded": 0,
-    "percentage": 0,
-    "difference": 0,
-    "place": 3
+    "games": 5,
+    "wins": 3,
+    "losses": 2,
+    "scored": 410,
+    "conceded": 400,
+    "headToHead": {
+      "1": 0,
+      "2": 0,
+      "4": 1,
+      "5": 1
+    }
   },
   {
     "id": 4,
     "team": "KITTY BOYS",
     "logo": "/otz2025/img/KITTY BOYS.png",
-    "games": 0,
-    "wins": 0,
-    "losses": 0,
-    "scored": 0,
-    "conceded": 0,
-    "percentage": 0,
-    "difference": 0,
-    "place": 4
+    "games": 5,
+    "wins": 2,
+    "losses": 3,
+    "scored": 380,
+    "conceded": 400,
+    "headToHead": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "5": 1
+    }
   },
   {
     "id": 5,
     "team": "PAW PATROL",
     "logo": "/otz2025/img/PPATROL.png",
-    "games": 0,
-    "wins": 0,
-    "losses": 0,
-    "scored": 0,
-    "conceded": 0,
-    "percentage": 0,
-    "difference": 0,
-    "place": 5
+    "games": 5,
+    "wins": 1,
+    "losses": 4,
+    "scored": 350,
+    "conceded": 410,
+    "headToHead": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "4": 0
+    }
   }
 ]
