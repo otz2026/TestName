@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Настройки турнирной таблицы</title>
     <style>
-        /* Стили полностью из вашего исходного кода */
+        /* Все ваши оригинальные стили */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -265,131 +265,46 @@
             </table>
         </div>
 
-        <div>
-            <button id="saveButton">Сохранить данные</button>
-            <input type="file" id="fileInput" accept=".json" style="display: none;">
-        </div>
+        <button id="saveButton">Сохранить изменения</button>
     </div>
 
     <script>
-        // Путь к JSON файлу с данными (по умолчанию)
-        const DATA_FILE_PATH = 'SSTimeSS/tournament_data.json';
-        
-        // Инициализация данных
+        // Путь к JSON файлу с данными
+        const DATA_FILE_PATH = '/TestName/SSTimeSS/tournament_data.json';
         let tableData = [];
 
         // Загрузка данных из JSON файла
         async function loadData() {
             try {
-                // Пробуем загрузить из указанного файла
                 const response = await fetch(DATA_FILE_PATH);
-                
-                if (!response.ok) {
-                    throw new Error('Файл данных не найден, используются начальные значения');
-                }
+                if (!response.ok) throw new Error('Не удалось загрузить данные');
                 
                 tableData = await response.json();
-                initializeTeams();
-                sortTeams();
+                prepareData();
                 renderTable();
             } catch (error) {
-                console.error(error.message);
-                // Если файл не найден, используем начальные данные
-                initializeDefaultData();
-                sortTeams();
-                renderTable();
+                console.error('Ошибка загрузки данных:', error);
+                alert('Ошибка загрузки данных. Проверьте консоль для подробностей.');
             }
         }
 
-        // Инициализация начальных данных
-        function initializeDefaultData() {
-            tableData = [
-                {
-                    id: 1,
-                    team: "BULLDOGS",
-                    logo: "/otz2025/img/BULLDOGS.png",
-                    games: 0,
-                    wins: 0,
-                    losses: 0,
-                    percentage: 0,
-                    scored: 0,
-                    conceded: 0,
-                    difference: 0,
-                    points: 0
-                },
-                {
-                    id: 2,
-                    team: "TEXAS NERS",
-                    logo: "/otz2025/img/TN.png",
-                    games: 0,
-                    wins: 0,
-                    losses: 0,
-                    percentage: 0,
-                    scored: 0,
-                    conceded: 0,
-                    difference: 0,
-                    points: 0
-                },
-                {
-                    id: 3,
-                    team: "RWE",
-                    logo: "/otz2025/img/RWE.png",
-                    games: 0,
-                    wins: 0,
-                    losses: 0,
-                    percentage: 0,
-                    scored: 0,
-                    conceded: 0,
-                    difference: 0,
-                    points: 0
-                },
-                {
-                    id: 4,
-                    team: "KITTY BOYS",
-                    logo: "/otz2025/img/KITTY BOYS.png",
-                    games: 0,
-                    wins: 0,
-                    losses: 0,
-                    percentage: 0,
-                    scored: 0,
-                    conceded: 0,
-                    difference: 0,
-                    points: 0
-                },
-                {
-                    id: 5,
-                    team: "PAW PATROL",
-                    logo: "/otz2025/img/PPATROL.png",
-                    games: 0,
-                    wins: 0,
-                    losses: 0,
-                    percentage: 0,
-                    scored: 0,
-                    conceded: 0,
-                    difference: 0,
-                    points: 0
-                }
-            ];
-        }
-
-        // Инициализация команд (если в загруженных данных нет всех полей)
-        function initializeTeams() {
+        // Подготовка данных (расчет вычисляемых полей)
+        function prepareData() {
             tableData.forEach(team => {
-                if (typeof team.percentage === 'undefined') {
-                    team.percentage = team.games > 0 ? Math.round((team.wins / team.games) * 100) : 0;
-                }
-                if (typeof team.difference === 'undefined') {
-                    team.difference = team.scored - team.conceded;
-                }
-                if (typeof team.points === 'undefined') {
-                    team.points = team.wins * 2;
-                }
+                // Процент побед
+                team.percentage = team.games > 0 ? Math.round((team.wins / team.games) * 100) : 0;
+                
+                // Разница мячей
+                team.difference = team.scored - team.conceded;
+                
+                // Очки (2 за победу)
+                team.points = team.wins * 2;
             });
-        }
-
-        // Сортировка команд по очкам (по убыванию)
-        function sortTeams() {
-            tableData.sort((a, b) => b.points - a.points);
+            
+            // Сортировка по очкам и разнице мячей
+            tableData.sort((a, b) => b.points - a.points || b.difference - a.difference);
+            
+            // Обновление позиций
             tableData.forEach((team, index) => {
                 team.place = index + 1;
             });
@@ -400,15 +315,15 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            tableData.forEach((team, index) => {
+            tableData.forEach(team => {
                 const row = document.createElement('tr');
                 
-                // Место
+                // Место (не редактируемое)
                 const placeCell = document.createElement('td');
                 placeCell.textContent = team.place;
                 row.appendChild(placeCell);
                 
-                // Команда
+                // Команда (не редактируемая)
                 const teamCell = document.createElement('td');
                 teamCell.className = 'team-cell';
                 teamCell.innerHTML = `
@@ -436,64 +351,55 @@
             const cell = document.createElement('td');
             cell.className = 'editable';
             cell.textContent = team[field];
+            cell.dataset.teamId = team.id;
             cell.dataset.field = field;
-            cell.dataset.index = team.place - 1;
             
             cell.addEventListener('click', function() {
-                const value = team[field];
                 const input = document.createElement('input');
                 input.type = 'number';
                 input.className = 'editable-input';
-                input.value = value;
+                input.value = team[field];
                 
                 cell.innerHTML = '';
                 cell.appendChild(input);
                 input.focus();
                 
-                input.addEventListener('blur', function() {
-                    saveCellValue(cell, input.value);
-                });
+                const saveValue = () => {
+                    const newValue = parseInt(input.value) || 0;
+                    updateTeamData(team.id, field, newValue);
+                    cell.textContent = newValue;
+                };
                 
-                input.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        saveCellValue(cell, input.value);
-                    }
-                });
+                input.addEventListener('blur', saveValue);
+                input.addEventListener('keypress', (e) => e.key === 'Enter' && saveValue());
             });
             
             row.appendChild(cell);
         }
 
-        // Сохранение значения ячейки
-        function saveCellValue(cell, value) {
-            const index = cell.dataset.index;
-            const field = cell.dataset.field;
+        // Обновление данных команды
+        function updateTeamData(teamId, field, value) {
+            const team = tableData.find(t => t.id === teamId);
+            if (!team) return;
             
-            tableData[index][field] = Number(value);
-            cell.textContent = value;
+            team[field] = value;
             
             // Пересчет зависимых полей
-            if (field === 'wins' || field === 'games' || field === 'scored' || field === 'conceded') {
-                updateCalculatedFields(index);
+            if (['wins', 'games', 'scored', 'conceded'].includes(field)) {
+                updateCalculatedFields(team);
             }
             
-            // Если изменились очки - сортируем команды
-            if (field === 'points' || field === 'wins') {
-                sortTeams();
+            // Если изменились важные поля - пересортировка
+            if (['wins', 'games', 'scored', 'conceded'].includes(field)) {
+                prepareData();
                 renderTable();
             }
         }
 
-        // Обновление вычисляемых полей
-        function updateCalculatedFields(index) {
-            const team = tableData[index];
-            
+        // Обновление вычисляемых полей для команды
+        function updateCalculatedFields(team) {
             // Процент побед
-            if (team.games > 0) {
-                team.percentage = Math.round((team.wins / team.games) * 100);
-            } else {
-                team.percentage = 0;
-            }
+            team.percentage = team.games > 0 ? Math.round((team.wins / team.games) * 100) : 0;
             
             // Разница мячей
             team.difference = team.scored - team.conceded;
@@ -502,56 +408,19 @@
             team.points = team.wins * 2;
         }
 
-        // Сохранение данных в JSON файл
+        // Сохранение данных (в localStorage)
         function saveData() {
-            const dataStr = JSON.stringify(tableData, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'tournament_data.json';
-            document.body.appendChild(a);
-            a.click();
-            
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 0);
-        }
-
-        // Загрузка данных из выбранного файла
-        function loadFromFile(file) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                try {
-                    tableData = JSON.parse(e.target.result);
-                    initializeTeams();
-                    sortTeams();
-                    renderTable();
-                    alert('Данные успешно загружены!');
-                } catch (error) {
-                    alert('Ошибка при чтении файла: ' + error.message);
-                }
-            };
-            
-            reader.readAsText(file);
+            localStorage.setItem('tournamentData', JSON.stringify(tableData));
+            alert('Изменения сохранены в браузере!');
         }
 
         // Инициализация при загрузке страницы
         document.addEventListener('DOMContentLoaded', function() {
-            // Автоматическая загрузка данных при открытии страницы
+            // Загрузка данных из JSON файла
             loadData();
             
-            // Обработчики кнопок
+            // Обработчик кнопки сохранения
             document.getElementById('saveButton').addEventListener('click', saveData);
-            
-            document.getElementById('fileInput').addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    loadFromFile(e.target.files[0]);
-                }
-            });
             
             // Обработчик скролла для шапки
             window.addEventListener('scroll', () => {
