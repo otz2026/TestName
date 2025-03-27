@@ -14,16 +14,16 @@
       "4": 1,
       "5": 1
     },
-    "percentage": 0,
+    "percentage": "100.0",
     "difference": 0,
-    "points": 0,
+    "points": 10,
     "place": 1
   },
   {
     "id": 2,
     "team": "TEXAS NERS",
     "logo": "/otz2025/img/TN.png",
-    "games": 0,
+    "games": 7,
     "wins": 0,
     "losses": 0,
     "scored": 0,
@@ -34,7 +34,7 @@
       "4": 1,
       "5": 1
     },
-    "percentage": 0,
+    "percentage": "0.0",
     "difference": 0,
     "points": 0,
     "place": 2
