@@ -1,53 +1,13 @@
 [
   {
-    "id": 2,
-    "team": "TEXAS NERS",
-    "logo": "/otz2025/img/TN.png",
-    "games": 7,
-    "wins": 7,
-    "losses": 0,
-    "scored": 89,
-    "conceded": 8,
-    "headToHead": {
-      "1": 0,
-      "3": 1,
-      "4": 1,
-      "5": 1
-    },
-    "percentage": "100.0",
-    "difference": 81,
-    "points": 14,
-    "place": 1
-  },
-  {
-    "id": 3,
-    "team": "RWE",
-    "logo": "/otz2025/img/RWE.png",
-    "games": 7,
-    "wins": 2,
-    "losses": 5,
-    "scored": 89,
-    "conceded": 6,
-    "headToHead": {
-      "1": 0,
-      "2": 0,
-      "4": 1,
-      "5": 1
-    },
-    "percentage": "28.6",
-    "difference": 83,
-    "points": 9,
-    "place": 2
-  },
-  {
     "id": 1,
     "team": "BULLDOGS",
     "logo": "/otz2025/img/BULLDOGS.png",
     "games": 0,
     "wins": 0,
     "losses": 0,
-    "scored": 79,
-    "conceded": 9,
+    "scored": 0,
+    "conceded": 0,
     "headToHead": {
       "2": 1,
       "3": 1,
@@ -55,7 +15,47 @@
       "5": 1
     },
     "percentage": 0,
-    "difference": 70,
+    "difference": 0,
+    "points": 0,
+    "place": 1
+  },
+  {
+    "id": 2,
+    "team": "TEXAS NERS",
+    "logo": "/otz2025/img/TN.png",
+    "games": 0,
+    "wins": 0,
+    "losses": 0,
+    "scored": 0,
+    "conceded": 0,
+    "headToHead": {
+      "1": 0,
+      "3": 1,
+      "4": 1,
+      "5": 1
+    },
+    "percentage": 0,
+    "difference": 0,
+    "points": 0,
+    "place": 2
+  },
+  {
+    "id": 3,
+    "team": "RWE",
+    "logo": "/otz2025/img/RWE.png",
+    "games": 0,
+    "wins": 0,
+    "losses": 0,
+    "scored": 0,
+    "conceded": 0,
+    "headToHead": {
+      "1": 0,
+      "2": 0,
+      "4": 1,
+      "5": 1
+    },
+    "percentage": 0,
+    "difference": 0,
     "points": 0,
     "place": 3
   },
