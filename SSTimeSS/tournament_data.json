@@ -1,0 +1,52 @@
+[
+    {
+        "id": 1,
+        "team": "BULLDOGS",
+        "logo": "/otz2025/img/BULLDOGS.png",
+        "games": 0,
+        "wins": 0,
+        "losses": 0,
+        "scored": 0,
+        "conceded": 0
+    },
+    {
+        "id": 2,
+        "team": "TEXAS NERS",
+        "logo": "/otz2025/img/TN.png",
+        "games": 0,
+        "wins": 0,
+        "losses": 0,
+        "scored": 0,
+        "conceded": 0
+    },
+    {
+        "id": 3,
+        "team": "RWE",
+        "logo": "/otz2025/img/RWE.png",
+        "games": 0,
+        "wins": 0,
+        "losses": 0,
+        "scored": 0,
+        "conceded": 0
+    },
+    {
+        "id": 4,
+        "team": "KITTY BOYS",
+        "logo": "/otz2025/img/KITTY BOYS.png",
+        "games": 0,
+        "wins": 0,
+        "losses": 0,
+        "scored": 0,
+        "conceded": 0
+    },
+    {
+        "id": 5,
+        "team": "PAW PATROL",
+        "logo": "/otz2025/img/PPATROL.png",
+        "games": 0,
+        "wins": 0,
+        "losses": 0,
+        "scored": 0,
+        "conceded": 0
+    }
+]
