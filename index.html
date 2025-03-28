@@ -421,36 +421,11 @@
             <a href="/TestName/schedule">Посмотреть полное расписание</a>
         </div>
 
-        <!-- Заголовок "Новости" -->
-        <h2>Новости</h2>
-        <div class="news">
-            <div class="news-item">
-                <img src="img/NEWS_NO.png" alt="Новость 0">
-                <div class="text">
-                    <h3>Команды готовятся к сезону: OVER TIME ZWENIGOROD стартует летом.</h3>
-                    <p>Сезон в Лиге OVER TIME ZWENIGOROD начнется только летом, но уже сейчас команды активно тренируются, чтобы показать лучшие результаты на турнире. Игроки отрабатывают тактики, улучшают индивидуальное мастерство и тестируют новые составы – всё ради того, чтобы в ответственных матчах проявить себя на максимум.</p>
-                    <a href="/TestName/news" class="read-more">Читать далее</a>
-                </div>
-            </div>            
-            <!--<div class="news-item">
-                <img src="img/NEWS2.png" alt="Новость 1">
-                <div class="text">
-                    <h3>Громкие трейды в OVER TIME ZWENIGOROD: KITTY BOYS, BULLDOGS и RWE обменялись игроками!</h3>
-                    <p>В OVER TIME ZWENIGOROD состоялись громкие обмены..</p>
-                    <a href="/otz2025/news" class="read-more">Читать далее</a>
-                </div>
-            </div>
-
-            <div class="news-item">
-                <img src="img/NEWS3.png" alt="Новость 1">
-                <div class="text">
-                    <h3>Травма Луцика Владимира: «Bulldogs» теряют ключевого игрока!</h3>
-                    <p>Игрок «Bulldogs» Луцик Владимир получил травму..</p>
-                    <a href="/otz2025/news" class="read-more">Читать далее</a>
-                </div>
-            </div>-->
-        
-        </div>
+    <!-- Заголовок "Новости" -->
+    <h2>Новости</h2>
+    <div class="news" id="newsContainer">
+        <!-- Новости будут загружаться здесь динамически -->
+        <div class="news-loading">Загрузка новостей...</div>
     </div>
 
     <footer>
@@ -470,24 +445,86 @@
             <p>© 2025 Over Time Zvenigorod. Все права защищены. <a href="https://t.me/voho_dranik" style="color: white; text-decoration: none;" class="hidden">Абоюдно.</a></p>
         </div>
     </footer>
-    
-    <!-- Yandex.RTB R-A-14641610-1 -->
-    <div id="yandex_rtb_R-A-14641610-1"></div>
-    <script>
-    window.yaContextCb.push(() => {
-        Ya.Context.AdvManager.render({
-            "blockId": "R-A-14641610-1",
-            "renderTo": "yandex_rtb_R-A-14641610-1"
-        })
-    })
-    </script>
 
- <!-- Yandex.RTB -->
-    <script>window.yaContextCb=window.yaContextCb||[]</script>
-    <script src="https://yandex.ru/ads/system/context.js" async></script>
-
-    <!-- Скрипты -->
     <script>
+        // Конфигурация
+        const CONFIG = {
+            NEWS_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/news_data.json"
+        };
+
+        // Функция загрузки новостей
+        async function loadNews() {
+            try {
+                const response = await fetch(`${CONFIG.NEWS_DATA_URL}?t=${Date.now()}`);
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка загрузки новостей');
+                }
+                
+                const newsData = await response.json();
+                displayNews(newsData);
+            } catch (error) {
+                console.error('Ошибка:', error);
+                document.getElementById('newsContainer').innerHTML = `
+                    <div class="news-error">
+                        Не удалось загрузить новости. Пожалуйста, попробуйте позже.
+                    </div>
+                `;
+            }
+        }
+
+        // Функция отображения новостей
+        function displayNews(newsData) {
+            const newsContainer = document.getElementById('newsContainer');
+            
+            if (!newsData || newsData.length === 0) {
+                newsContainer.innerHTML = `
+                    <div class="news-empty">
+                        Новостей пока нет. Следите за обновлениями!
+                    </div>
+                `;
+                return;
+            }
+
+            let newsHTML = '';
+            
+            newsData.forEach(news => {
+                // Создаем краткое описание (первые 200 символов)
+                const shortContent = news.content.length > 200 
+                    ? news.content.substring(0, 200) + '...' 
+                    : news.content;
+                
+                newsHTML += `
+                    <div class="news-item">
+                        <img src="${news.image || 'img/NEWS_NO.png'}" alt="${news.title}">
+                        <div class="text">
+                            <h3>${news.title}</h3>
+                            <p>${shortContent}</p>
+                            <a href="/TestName/news" class="read-more">Читать далее</a>
+                        </div>
+                    </div>
+                `;
+            });
+
+            newsContainer.innerHTML = newsHTML;
+        }
+
+        // Добавляем стили для состояний загрузки
+        const style = document.createElement('style');
+        style.textContent = `
+            .news-loading, .news-error, .news-empty {
+                text-align: center;
+                padding: 40px;
+                font-size: 18px;
+                color: #ccc;
+                width: 100%;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Загружаем новости при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadNews);
+
         // Регистрация Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -554,7 +591,6 @@
                 .then(reg => console.log('SW registered'))
                 .catch(err => console.log('SW registration failed:', err));
         }
-     
     </script>
 </body>
 </html>
