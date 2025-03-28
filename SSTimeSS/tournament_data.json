@@ -1,5 +1,26 @@
 [
   {
+    "id": 4,
+    "team": "KITTY BOYS",
+    "logo": "/otz2025/img/KITTY BOYS.png",
+    "games": 10,
+    "wins": 5,
+    "losses": 5,
+    "scored": 0,
+    "conceded": 0,
+    "headToHead": {
+      "1": 0,
+      "2": 0,
+      "3": 0,
+      "5": 1
+    },
+    "percentage": "50.0",
+    "difference": 0,
+    "points": 15,
+    "place": 1,
+    "urlname": "KittyBoys"
+  },
+  {
     "id": 3,
     "team": "RWE",
     "logo": "/otz2025/img/RWE.png",
@@ -17,7 +38,7 @@
     "percentage": "71.4",
     "difference": 33,
     "points": 12,
-    "place": 1,
+    "place": 2,
     "urlname": "RWE"
   },
   {
@@ -38,15 +59,15 @@
     "percentage": "80.0",
     "difference": 4,
     "points": 9,
-    "place": 2,
+    "place": 3,
     "urlname": "Bulldogs"
   },
   {
     "id": 2,
     "team": "TEXAS NERS",
     "logo": "/otz2025/img/TN.png",
-    "games": 5,
-    "wins": 2,
+    "games": 4,
+    "wins": 0,
     "losses": 3,
     "scored": 4,
     "conceded": 1,
@@ -56,40 +77,19 @@
       "4": 1,
       "5": 1
     },
-    "percentage": "40.0",
+    "percentage": "0.0",
     "difference": 3,
-    "points": 7,
-    "place": 3,
-    "urlname": "TN"
-  },
-  {
-    "id": 4,
-    "team": "KITTY BOYS",
-    "logo": "/otz2025/img/KITTY BOYS.png",
-    "games": 5,
-    "wins": 1,
-    "losses": 4,
-    "scored": 0,
-    "conceded": 0,
-    "headToHead": {
-      "1": 0,
-      "2": 0,
-      "3": 0,
-      "5": 1
-    },
-    "percentage": "20.0",
-    "difference": 0,
-    "points": 6,
+    "points": 3,
     "place": 4,
-    "urlname": "KittyBoys"
+    "urlname": "TN"
   },
   {
     "id": 5,
     "team": "PAW PATROL",
     "logo": "/otz2025/img/PPATROL.png",
-    "games": 0,
+    "games": 1,
     "wins": 0,
-    "losses": 0,
+    "losses": 1,
     "scored": 0,
     "conceded": 0,
     "headToHead": {
@@ -98,9 +98,9 @@
       "3": 0,
       "4": 0
     },
-    "percentage": 0,
+    "percentage": "0.0",
     "difference": 0,
-    "points": 0,
+    "points": 1,
     "place": 5,
     "urlname": "PawPatrol"
   }
