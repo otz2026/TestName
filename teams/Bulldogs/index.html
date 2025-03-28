@@ -479,39 +479,37 @@
     <script>
         // Конфигурация
         const CONFIG = {
-            // Обновленный URL сырого файла с GitHub
             JSON_URL: "https://raw.githubusercontent.com/otz2026/otz2025/main/tournament_data.json",
             UPDATE_INTERVAL: 30000,
-            TEAM_ID: "Bulldogs" // Должно совпадать с urlname в JSON
+            TEAM_ID: "Bulldogs"
         };
     
+        // Загрузка данных команды
         async function loadTeamData() {
             try {
-                // Добавляем обработку CORS через прокси
-                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-                const response = await fetch(proxyUrl + CONFIG.JSON_URL);
-                
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const response = await fetch(CONFIG.JSON_URL);
+                if (!response.ok) throw new Error(`Ошибка HTTP! Статус: ${response.status}`);
                 
                 const data = await response.json();
-                console.log('Received data:', data); // Отладка
+                console.log('Получены данные:', data);
     
-                // Ищем команду по urlname (чувствительно к регистру!)
-                const teamData = data.find(t => t.urlname === CONFIG.TEAM_ID);
+                // Ищем команду по urlname (регистр важен!)
+                const teamData = data.find(team => team.urlname === CONFIG.TEAM_ID);
                 
                 if (!teamData) {
-                    console.error('Команда не найдена');
+                    console.warn('Команда не найдена, используются данные по умолчанию');
                     return getDefaultTeamData();
                 }
                 
                 return teamData;
                 
             } catch (error) {
-                console.error('Fetch error:', error);
+                console.error('Ошибка загрузки данных:', error);
                 return getDefaultTeamData();
             }
         }
     
+        // Данные по умолчанию
         function getDefaultTeamData() {
             return {
                 team: "BULLDOGS",
@@ -528,13 +526,14 @@
             };
         }
     
+        // Обновление таблицы
         async function updateTeamStats() {
             const teamData = await loadTeamData();
-            console.log('Team data:', teamData); // Отладка
+            console.log('Данные команды:', teamData);
     
             const tableBody = document.getElementById('teamStats');
             if (!tableBody) {
-                console.error('Table body not found');
+                console.error('Элемент teamStats не найден');
                 return;
             }
     
@@ -543,7 +542,7 @@
                     <td>${teamData.place}</td>
                     <td class="team-cell">
                         <img src="${teamData.logo}" class="team-logo" 
-                             onerror="this.src='/otz2025/img/OTZ2.png'">
+                             onerror="this.onerror=null;this.src='/otz2025/img/OTZ2.png'">
                         ${teamData.team}
                     </td>
                     <td>${teamData.games}</td>
@@ -560,13 +559,23 @@
     
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
+            // Первая загрузка
             updateTeamStats();
-            setInterval(updateTeamStats, CONFIG.UPDATE_INTERVAL);
             
-            // Обработчик скролла
+            // Автообновление
+            const intervalId = setInterval(updateTeamStats, CONFIG.UPDATE_INTERVAL);
+            
+            // Эффект при скролле
             window.addEventListener('scroll', () => {
                 const header = document.getElementById('header');
-                if (header) header.classList.toggle('scrolled', window.scrollY > 50);
+                if (header) {
+                    header.classList.toggle('scrolled', window.scrollY > 50);
+                }
+            });
+    
+            // Очистка при закрытии
+            window.addEventListener('beforeunload', () => {
+                clearInterval(intervalId);
             });
         });
     </script>
