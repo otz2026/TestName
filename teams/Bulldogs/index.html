@@ -476,35 +476,42 @@
             <p>© 2025 Over Time Zvenigorod. Все права защищены.</p>
         </div>
     </footer>
-
     <script>
         // Конфигурация
         const CONFIG = {
+            // Обновленный URL сырого файла с GitHub
             JSON_URL: "https://raw.githubusercontent.com/otz2026/otz2025/main/tournament_data.json",
-            UPDATE_INTERVAL: 30000, // 30 секунд
-            TEAM_ID: "Bulldogs" // Используем urlname для поиска
+            UPDATE_INTERVAL: 30000,
+            TEAM_ID: "Bulldogs" // Должно совпадать с urlname в JSON
         };
     
-        // Загрузка данных команды
         async function loadTeamData() {
             try {
-                const response = await fetch(`${CONFIG.JSON_URL}?t=${Date.now()}`);
-                if (!response.ok) throw new Error('Ошибка загрузки данных');
+                // Добавляем обработку CORS через прокси
+                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                const response = await fetch(proxyUrl + CONFIG.JSON_URL);
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
                 const data = await response.json();
+                console.log('Received data:', data); // Отладка
+    
+                // Ищем команду по urlname (чувствительно к регистру!)
+                const teamData = data.find(t => t.urlname === CONFIG.TEAM_ID);
                 
-                // Находим данные для текущей команды
-                const teamData = Array.isArray(data) 
-                    ? data.find(team => team.urlname === CONFIG.TEAM_ID) 
-                    : null;
+                if (!teamData) {
+                    console.error('Команда не найдена');
+                    return getDefaultTeamData();
+                }
                 
-                return teamData || getDefaultTeamData();
+                return teamData;
+                
             } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
+                console.error('Fetch error:', error);
                 return getDefaultTeamData();
             }
         }
     
-        // Тестовые данные команды
         function getDefaultTeamData() {
             return {
                 team: "BULLDOGS",
@@ -521,59 +528,45 @@
             };
         }
     
-        // Обновление статистики команды
         async function updateTeamStats() {
             const teamData = await loadTeamData();
-            if (!teamData) return;
+            console.log('Team data:', teamData); // Отладка
     
-            // Обновляем таблицу
             const tableBody = document.getElementById('teamStats');
-            if (tableBody) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td>${teamData.place || 1}</td>
-                        <td class="team-cell">
-                            <img src="${teamData.logo || ''}" class="team-logo">
-                            ${teamData.team}
-                        </td>
-                        <td>${teamData.games || 0}</td>
-                        <td>${teamData.wins || 0}</td>
-                        <td>${teamData.losses || 0}</td>
-                        <td>${teamData.percentage || "0.0"}</td>
-                        <td>${teamData.scored || 0}</td>
-                        <td>${teamData.conceded || 0}</td>
-                        <td>${teamData.difference || 0}</td>
-                        <td>${teamData.points || 0}</td>
-                    </tr>
-                `;
+            if (!tableBody) {
+                console.error('Table body not found');
+                return;
             }
-        }
     
-        // Автоматическое обновление
-        function startAutoRefresh() {
-            // Первоначальная загрузка
-            updateTeamStats();
-            
-            // Установка интервала обновления
-            return setInterval(updateTeamStats, CONFIG.UPDATE_INTERVAL);
+            tableBody.innerHTML = `
+                <tr>
+                    <td>${teamData.place}</td>
+                    <td class="team-cell">
+                        <img src="${teamData.logo}" class="team-logo" 
+                             onerror="this.src='/otz2025/img/OTZ2.png'">
+                        ${teamData.team}
+                    </td>
+                    <td>${teamData.games}</td>
+                    <td>${teamData.wins}</td>
+                    <td>${teamData.losses}</td>
+                    <td>${teamData.percentage}%</td>
+                    <td>${teamData.scored}</td>
+                    <td>${teamData.conceded}</td>
+                    <td>${teamData.difference}</td>
+                    <td>${teamData.points}</td>
+                </tr>
+            `;
         }
     
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
-            // Запуск автоматического обновления
-            const refreshInterval = startAutoRefresh();
+            updateTeamStats();
+            setInterval(updateTeamStats, CONFIG.UPDATE_INTERVAL);
             
-            // Обработчик скролла для шапки
+            // Обработчик скролла
             window.addEventListener('scroll', () => {
                 const header = document.getElementById('header');
-                if (header) {
-                    header.classList.toggle('scrolled', window.scrollY > 50);
-                }
-            });
-    
-            // Очистка интервала при закрытии страницы
-            window.addEventListener('beforeunload', () => {
-                clearInterval(refreshInterval);
+                if (header) header.classList.toggle('scrolled', window.scrollY > 50);
             });
         });
     </script>
