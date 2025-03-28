@@ -367,7 +367,6 @@
     </style>
 </head>
 <body>
-    <!-- Верхний блок с кнопками навигации -->
     <header id="header">
         <div class="logo">OVER TIME ZWENIGOROD</div>
         <nav>
@@ -378,24 +377,20 @@
         </nav>
     </header>
 
-    <!-- Основной контент страницы -->
     <div class="content">
-        <!-- Блок с информацией о команде -->
         <div class="team-info">
-            <img src="/otz2025/img/BULLDOGS.png" alt="team">
+            <img src="/otz2025/img/BULLDOGS.png" alt="Bulldogs">
             <div>
                 <div class="team-name">Bulldogs</div>
                 <div class="team-description">Сезон 2025</div>
             </div>
         </div>
 
-        <!-- Заголовок и линия над таблицей -->
         <div class="table-header">
             <h3>Рейтинг</h3>
             <hr>
         </div>
 
-        <!-- Таблица -->
         <div class="table-container">
             <table>
                 <thead>
@@ -412,87 +407,62 @@
                         <th>Очки</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Строки таблицы -->
-                    <tr>
-                        <td>1</td>
-                        <td class="team-cell">
-                            <img src="/otz2025/img/BULLDOGS.png" alt="PPATROL" class="team-logo">
-                            Bulldogs
-                        </td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                    </tr>
+                <tbody id="teamStats">
+                    <!-- Данные будут загружены динамически -->
                 </tbody>
             </table>
         </div>
 
-        <!-- Заголовок "Состав" -->
         <div class="table-header">
             <h3>Состав</h3>
             <hr>
         </div>
 
-        <!-- Блок с составом команды -->
         <div class="team-squad">
-            <!-- Игрок 1 -->
             <div class="player-card">
-                <img src="/otz2025/img/teams/21.jpg" alt="Игрок 1"> <!-- /otz2025/img/BULLDOGS.png -->
+                <img src="/otz2025/img/teams/21.jpg" alt="Трихук Никита">
                 <div class="player-info">
                     <div class="player-name">Трихук Никита</div>
                     <div class="player-stats">Рост: 187 см</div>
                 </div>
             </div>
 
-            <!-- Игрок 2 -->
             <div class="player-card">
-                <img src="/otz2025/img/teams/24.jpg" alt="Игрок 2">
+                <img src="/otz2025/img/teams/24.jpg" alt="Чугунов Макар">
                 <div class="player-info">
                     <div class="player-name">Чугунов Макар</div>
                     <div class="player-stats">Рост: 187 см</div>
                 </div>
             </div>
 
-            <!-- Игрок 3 -->
             <div class="player-card">
-                <img src="/otz2025/img/teams/5.jpg" alt="Игрок 2">
+                <img src="/otz2025/img/teams/5.jpg" alt="Шипко Владимир">
                 <div class="player-info">
                     <div class="player-name">Шипко Владимир</div>
                     <div class="player-stats">Рост: 175 см</div>
                 </div>
             </div>
             
-            <!-- Игрок 4 -->
             <div class="player-card">
-                <img src="/otz2025/img/teams/26.jpg" alt="Игрок 2">
+                <img src="/otz2025/img/teams/26.jpg" alt="Яртым Андрей">
                 <div class="player-info">
                     <div class="player-name">Яртым Андрей</div>
                     <div class="player-stats">Рост: 174 см</div>
                 </div>
             </div>
             
-            <!-- Игрок 5 -->
             <div class="player-card">
-                <img src="/otz2025/img/teams/25.jpg" alt="Игрок 2">
+                <img src="/otz2025/img/teams/25.jpg" alt="Макаров Николай">
                 <div class="player-info">
                     <div class="player-name">Макаров Николай</div>
                     <div class="player-stats">Рост: 176 см</div>
                 </div>
             </div>
-            
         </div>
     </div>
 
-    <!-- Подвал -->
     <footer>
         <div class="footer-content">
-            <!-- Логотипы TikTok и изображение сайта -->
             <div class="social-links">
                 <a href="https://www.tiktok.com/@otz.summer.league?_t=ZS-8uNhlZxvA0N&_r=1" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
@@ -500,19 +470,116 @@
                     </svg>
                 </a>
                 <a href="https://t.me/pisunapidora" target="_blank">
-                    <img src="/otz2025/img/TG.png" alt="Логотип сайта">
+                    <img src="/otz2025/img/TG.png" alt="Telegram">
                 </a>
             </div>
-
             <p>© 2025 Over Time Zvenigorod. Все права защищены.</p>
         </div>
     </footer>
 
     <script>
-        // Скрипт для изменения фона шапки при скролле
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            header.classList.toggle('scrolled', window.scrollY > 50);
+        // Конфигурация
+        const CONFIG = {
+            JSON_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/tournament_data.json",
+            UPDATE_INTERVAL: 30000, // 30 секунд
+            TEAM_ID: "Bulldogs" // ID текущей команды
+        };
+
+        // Загрузка данных команды
+        async function loadTeamData() {
+            try {
+                const response = await fetch(`${CONFIG.JSON_URL}?t=${Date.now()}`);
+                if (!response.ok) throw new Error('Ошибка загрузки данных');
+                const data = await response.json();
+                
+                // Находим данные для текущей команды
+                const teamData = Array.isArray(data) 
+                    ? data.find(team => team.id === CONFIG.TEAM_ID) 
+                    : null;
+                
+                return teamData || getDefaultTeamData();
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                return getDefaultTeamData();
+            }
+        }
+
+        // Тестовые данные команды
+        function getDefaultTeamData() {
+            return {
+                id: "Bulldogs",
+                team: "BULLDOGS",
+                logo: "/otz2025/img/BULLDOGS.png",
+                games: 0,
+                wins: 0,
+                losses: 0,
+                scored: 0,
+                conceded: 0,
+                place: 1
+            };
+        }
+
+        // Обновление статистики команды
+        async function updateTeamStats() {
+            const teamData = await loadTeamData();
+            if (!teamData) return;
+
+            // Рассчитываем дополнительные показатели
+            const winPercentage = teamData.games > 0 
+                ? ((teamData.wins / teamData.games) * 100).toFixed(1) 
+                : 0;
+            const pointsDiff = (teamData.scored || 0) - (teamData.conceded || 0);
+            const points = (teamData.wins || 0) * 2 + (teamData.losses || 0) * 1;
+
+            // Обновляем таблицу
+            const tableBody = document.getElementById('teamStats');
+            if (tableBody) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td>${teamData.place || 1}</td>
+                        <td class="team-cell">
+                            <img src="${teamData.logo || ''}" class="team-logo">
+                            ${teamData.team}
+                        </td>
+                        <td>${teamData.games || 0}</td>
+                        <td>${teamData.wins || 0}</td>
+                        <td>${teamData.losses || 0}</td>
+                        <td>${winPercentage}</td>
+                        <td>${teamData.scored || 0}</td>
+                        <td>${teamData.conceded || 0}</td>
+                        <td>${pointsDiff}</td>
+                        <td>${points}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Автоматическое обновление
+        function startAutoRefresh() {
+            // Первоначальная загрузка
+            updateTeamStats();
+            
+            // Установка интервала обновления
+            return setInterval(updateTeamStats, CONFIG.UPDATE_INTERVAL);
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            // Запуск автоматического обновления
+            const refreshInterval = startAutoRefresh();
+            
+            // Обработчик скролла для шапки
+            window.addEventListener('scroll', () => {
+                const header = document.getElementById('header');
+                if (header) {
+                    header.classList.toggle('scrolled', window.scrollY > 50);
+                }
+            });
+
+            // Очистка интервала при закрытии страницы
+            window.addEventListener('beforeunload', () => {
+                clearInterval(refreshInterval);
+            });
         });
     </script>
 </body>
