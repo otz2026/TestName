@@ -396,7 +396,7 @@
             <hr>
         </div>
 
-        <!-- Таблица -->
+        <!-- В таблице заменяем статичные данные на динамические -->
         <div class="table-container">
             <table>
                 <thead>
@@ -413,23 +413,8 @@
                         <th>Очки</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Строки таблицы -->
-                    <tr>
-                        <td>1</td>
-                        <td class="team-cell">
-                            <img src="/otz2025/img/KITTY BOYS.png" alt="Kitty Boys" class="team-logo">
-                            Kitty Boys
-                        </td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                    </tr>
+                <tbody id="teamStats">
+                    <!-- Данные будут загружаться динамически -->
                 </tbody>
             </table>
         </div>
@@ -518,8 +503,97 @@
         </div>
     </footer>
 
+    <!-- Полный скрипт с улучшениями -->
     <script>
-        // Скрипт для изменения фона шапки при скролле
+        // Конфигурация
+        const CONFIG = {
+            JSON_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/tournament_data.json",
+            UPDATE_INTERVAL: 30000,
+            TEAM_ID: "KittyBoys"
+        };
+    
+        // Кеширование данных
+        let cachedData = null;
+        let lastUpdateTime = 0;
+    
+        async function loadTeamData() {
+            try {
+                // Используем кеш, если данные свежие
+                if (cachedData && Date.now() - lastUpdateTime < CONFIG.UPDATE_INTERVAL) {
+                    return cachedData;
+                }
+    
+                const response = await fetch(CONFIG.JSON_URL);
+                if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
+                
+                const data = await response.json();
+                const teamData = data.find(team => team.urlname === CONFIG.TEAM_ID);
+                
+                if (!teamData) {
+                    console.warn('Команда не найдена');
+                    return getDefaultData();
+                }
+    
+                // Обновляем кеш
+                cachedData = teamData;
+                lastUpdateTime = Date.now();
+                return teamData;
+    
+            } catch (error) {
+                console.error('Ошибка:', error);
+                return cachedData || getDefaultData();
+            }
+        }
+    
+        function getDefaultData() {
+            return {
+                team: "KITTY BOYS",
+                logo: "/otz2025/img/KITTY BOYS.png",
+                games: 0,
+                wins: 0,
+                losses: 0,
+                scored: 0,
+                conceded: 0,
+                percentage: "0.0",
+                difference: 0,
+                points: 0,
+                place: 1
+            };
+        }
+    
+        async function updateTable() {
+            const data = await loadTeamData();
+            const table = document.getElementById('teamStats');
+            
+            if (!table) return;
+    
+            table.innerHTML = `
+                <tr>
+                    <td>${data.place}</td>
+                    <td class="team-cell">
+                        <img src="${data.logo}" class="team-logo" 
+                             onerror="this.onerror=null;this.src='/otz2025/img/OTZ2.png'">
+                        ${data.team}
+                    </td>
+                    <td>${data.games}</td>
+                    <td>${data.wins}</td>
+                    <td>${data.losses}</td>
+                    <td>${data.percentage}%</td>
+                    <td>${data.scored}</td>
+                    <td>${data.conceded}</td>
+                    <td>${data.difference}</td>
+                    <td>${data.points}</td>
+                </tr>
+            `;
+        }
+    
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTable();
+            setInterval(updateTable, CONFIG.UPDATE_INTERVAL);
+        });
+    
+        // Существующий скрипт для шапки
         window.addEventListener('scroll', () => {
             const header = document.getElementById('header');
             header.classList.toggle('scrolled', window.scrollY > 50);
