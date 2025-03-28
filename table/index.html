@@ -549,7 +549,8 @@
                     "wins": 0,
                     "losses": 0,
                     "scored": 0,
-                    "conceded": 0
+                    "conceded": 0,
+                    "urlname": "Bulldogs"
                 },
                 {
                     "id": "TN",
@@ -559,7 +560,8 @@
                     "wins": 0,
                     "losses": 0,
                     "scored": 0,
-                    "conceded": 0
+                    "conceded": 0,
+                    "urlname": "TN"
                 },
                 {
                     "id": "RWE",
@@ -569,7 +571,8 @@
                     "wins": 0,
                     "losses": 0,
                     "scored": 0,
-                    "conceded": 0
+                    "conceded": 0,
+                    "urlname": "RWE"
                 },
                 {
                     "id": "KittyBoys",
@@ -579,7 +582,8 @@
                     "wins": 0,
                     "losses": 0,
                     "scored": 0,
-                    "conceded": 0
+                    "conceded": 0,
+                    "urlname": "KittyBoys"
                 },
                 {
                     "id": "PawPatrol",
@@ -589,7 +593,9 @@
                     "wins": 0,
                     "losses": 0,
                     "scored": 0,
-                    "conceded": 0
+                    "conceded": 0,
+                    "urlname": "PawPatrol"
+                    
                 }
             ];
         }
@@ -633,7 +639,7 @@
                     <td>${index + 1}</td>
                     <td class="team-cell">
                         <img src="${team.logo || ''}" class="team-logo">
-                        <a href="/otz2025/teams/${teamid}">${team.team}</a>
+                        <a href="/otz2025/teams/${team.id}">${team.team}</a>
                     </td>
                     <td>${team.games || 0}</td>
                     <td>${team.wins || 0}</td>
