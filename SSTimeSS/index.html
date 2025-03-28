@@ -46,7 +46,6 @@
             flex: 1;
         }
         
-        /* Header Styles */
         .main-header {
             font-size: clamp(1.5rem, 4vw, 2.5rem);
             color: var(--primary-color);
@@ -75,7 +74,6 @@
             border-left: 4px solid var(--primary-color);
         }
         
-        /* Table Styles */
         .table-container {
             overflow-x: auto;
             margin: 20px 0;
@@ -119,7 +117,6 @@
             object-fit: cover;
         }
         
-        /* Editable Cells */
         .editable {
             cursor: pointer;
             transition: all 0.2s;
@@ -139,7 +136,6 @@
             opacity: 0.5;
         }
         
-        /* Button Styles */
         .button-group {
             display: flex;
             gap: 10px;
@@ -174,7 +170,6 @@
             background-color: #572d2c;
         }
         
-        /* Status Messages */
         .status-message {
             margin: 15px 0;
             padding: 12px;
@@ -194,7 +189,6 @@
             background-color: rgba(45, 58, 87, 0.7);
         }
         
-        /* News Editor */
         .news-editor {
             background-color: var(--bg-light);
             padding: 20px;
@@ -241,7 +235,6 @@
             border: 1px solid var(--border-color);
         }
         
-        /* News List */
         .news-list {
             margin-top: 30px;
         }
@@ -271,7 +264,6 @@
             margin-top: 10px;
         }
         
-        /* Mobile Adaptations */
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -307,7 +299,6 @@
             }
         }
         
-        /* PWA Installation Prompt */
         .install-prompt {
             position: fixed;
             bottom: 20px;
@@ -426,16 +417,16 @@
         <button id="dismissBtn">Позже</button>
     </div>
 
-
     <script>
-        // Конфигурация (ИЗМЕНИТЕ ПУТИ!)
+        // Конфигурация
         const CONFIG = {
             GITHUB_USER: "otz2026",
             REPO_NAME: "TestName",
             TABLE_FILE_PATH: "SSTimeSS/tournament_data.json",
-            NEWS_FILE_PATH: "news_data.json", // Теперь в той же папке
+            NEWS_FILE_PATH: "SSTimeSS/news_data.json",
             GITHUB_TOKEN: ""
         };
+
         let tableData = [];
         let newsData = [];
         let deferredPrompt;
@@ -464,7 +455,6 @@
             });
         });
 
-        // Register Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').then(registration => {
@@ -619,7 +609,6 @@
             try {
                 const apiUrl = `https://api.github.com/repos/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/contents/${CONFIG.TABLE_FILE_PATH}`;
                 
-                // Получаем текущий SHA файла
                 const fileInfo = await fetch(apiUrl, {
                     headers: {
                         "Authorization": `token ${token}`,
@@ -633,7 +622,6 @@
                     sha = fileData.sha;
                 }
                 
-                // Отправляем обновленные данные
                 const response = await fetch(apiUrl, {
                     method: "PUT",
                     headers: {
@@ -715,12 +703,16 @@
             }
             
             newsData.forEach((news, index) => {
+                const shortContent = news.content.length > 100 
+                    ? news.content.substring(0, 100) + "..." 
+                    : news.content;
+                
                 const newsItem = document.createElement("div");
                 newsItem.className = "news-item";
                 newsItem.innerHTML = `
                     <h3>${news.title || "Без названия"}</h3>
                     ${news.image ? `<img src="${news.image}" class="preview-image">` : ''}
-                    <p>${news.content ? news.content.substring(0, 100) + (news.content.length > 100 ? "..." : "") : "Нет содержания"}</p>
+                    <p>${shortContent}</p>
                     <div class="news-item-actions">
                         <button onclick="editNews(${index})">Редактировать</button>
                         <button onclick="deleteNews(${index})" class="delete-btn">Удалить</button>
@@ -739,7 +731,7 @@
             document.getElementById("newsTitle").value = news.title || "";
             document.getElementById("newsImage").value = news.image || "";
             document.getElementById("newsContent").value = news.content || "";
-            document.getElementById("newsFullContent").value = news.full_content || "";
+            document.getElementById("newsFullContent").value = news.full_content || news.content || "";
             
             updateImagePreview();
         }
@@ -768,16 +760,11 @@
                 return;
             }
             
-            if (!fullContent) {
-                showNewsStatus("Введите полный текст новости", "error");
-                return;
-            }
-            
             const newsItem = {
                 title: title,
                 image: image,
                 content: content,
-                full_content: fullContent,
+                full_content: fullContent || content,
                 date: new Date().toISOString().split('T')[0]
             };
             
@@ -808,7 +795,6 @@
             try {
                 const apiUrl = `https://api.github.com/repos/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/contents/${CONFIG.NEWS_FILE_PATH}`;
                 
-                // Проверяем существование файла
                 let sha = null;
                 try {
                     const fileInfo = await fetch(apiUrl, {
@@ -826,7 +812,6 @@
                     console.log("Файл новостей не существует, будет создан новый");
                 }
                 
-                // Отправляем данные
                 const response = await fetch(apiUrl, {
                     method: "PUT",
                     headers: {
