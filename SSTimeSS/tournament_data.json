@@ -17,7 +17,8 @@
     "percentage": 0,
     "difference": 0,
     "points": 0,
-    "place": 1
+    "place": 1,
+    "urlname": "Bulldogs"
   },
   {
     "id": 2,
@@ -37,7 +38,8 @@
     "percentage": 0,
     "difference": 0,
     "points": 0,
-    "place": 2
+    "place": 2,
+    "urlname": "TN"
   },
   {
     "id": 3,
@@ -57,7 +59,8 @@
     "percentage": 0,
     "difference": 0,
     "points": 0,
-    "place": 3
+    "place": 3,
+    "urlname": "RWE"
   },
   {
     "id": 4,
@@ -77,7 +80,8 @@
     "percentage": 0,
     "difference": 0,
     "points": 0,
-    "place": 4
+    "place": 4,
+    "urlname": "KittyBoys"
   },
   {
     "id": 5,
@@ -97,6 +101,7 @@
     "percentage": 0,
     "difference": 0,
     "points": 0,
-    "place": 5
+    "place": 5,
+    "urlname": "PawPatrol"
   }
 ]
