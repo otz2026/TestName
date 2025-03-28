@@ -480,11 +480,11 @@
     <script>
         // Конфигурация
         const CONFIG = {
-            JSON_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/tournament_data.json",
+            JSON_URL: "https://raw.githubusercontent.com/otz2026/otz2025/main/tournament_data.json",
             UPDATE_INTERVAL: 30000, // 30 секунд
             TEAM_ID: "Bulldogs" // ID текущей команды
         };
-
+    
         // Загрузка данных команды
         async function loadTeamData() {
             try {
@@ -493,8 +493,8 @@
                 const data = await response.json();
                 
                 // Находим данные для текущей команды
-                const teamData = Array.isArray(data) 
-                    ? data.find(team => team.id === CONFIG.TEAM_ID) 
+                const teamData = Array.isArray(data.teams) 
+                    ? data.teams.find(team => team.id === CONFIG.TEAM_ID) 
                     : null;
                 
                 return teamData || getDefaultTeamData();
@@ -503,7 +503,7 @@
                 return getDefaultTeamData();
             }
         }
-
+    
         // Тестовые данные команды
         function getDefaultTeamData() {
             return {
@@ -518,19 +518,19 @@
                 place: 1
             };
         }
-
+    
         // Обновление статистики команды
         async function updateTeamStats() {
             const teamData = await loadTeamData();
             if (!teamData) return;
-
+    
             // Рассчитываем дополнительные показатели
             const winPercentage = teamData.games > 0 
                 ? ((teamData.wins / teamData.games) * 100).toFixed(1) 
                 : 0;
             const pointsDiff = (teamData.scored || 0) - (teamData.conceded || 0);
             const points = (teamData.wins || 0) * 2 + (teamData.losses || 0) * 1;
-
+    
             // Обновляем таблицу
             const tableBody = document.getElementById('teamStats');
             if (tableBody) {
@@ -553,7 +553,7 @@
                 `;
             }
         }
-
+    
         // Автоматическое обновление
         function startAutoRefresh() {
             // Первоначальная загрузка
@@ -562,7 +562,7 @@
             // Установка интервала обновления
             return setInterval(updateTeamStats, CONFIG.UPDATE_INTERVAL);
         }
-
+    
         // Инициализация
         document.addEventListener('DOMContentLoaded', () => {
             // Запуск автоматического обновления
@@ -575,7 +575,7 @@
                     header.classList.toggle('scrolled', window.scrollY > 50);
                 }
             });
-
+    
             // Очистка интервала при закрытии страницы
             window.addEventListener('beforeunload', () => {
                 clearInterval(refreshInterval);
