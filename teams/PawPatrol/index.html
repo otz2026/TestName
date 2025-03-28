@@ -412,23 +412,8 @@
                         <th>Очки</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Строки таблицы -->
-                    <tr>
-                        <td>1</td>
-                        <td class="team-cell">
-                            <img src="/otz2025/img/PPATROL.png" alt="PPATROL" class="team-logo">
-                            Paw Patrol
-                        </td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td>0</td>
-                    </tr>
+                <tbody id="teamStats">
+                    <!-- Данные будут загружаться скриптом -->
                 </tbody>
             </table>
         </div>
@@ -507,13 +492,124 @@
             <p>© 2025 Over Time Zvenigorod. Все права защищены.</p>
         </div>
     </footer>
-
     <script>
-        // Скрипт для изменения фона шапки при скролле
+        // Конфигурация
+        const CONFIG = {
+            JSON_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/tournament_data.json",
+            UPDATE_INTERVAL: 30000, // 30 секунд
+            TEAM_ID: "PawPatrol" // Должно совпадать с urlname в JSON
+        };
+    
+        // Кеширование данных
+        let cachedData = null;
+        let lastUpdateTime = 0;
+    
+        // Загрузка данных команды
+        async function loadTeamData() {
+            try {
+                // Используем кеш, если данные свежие
+                if (cachedData && Date.now() - lastUpdateTime < CONFIG.UPDATE_INTERVAL) {
+                    return cachedData;
+                }
+    
+                console.log('Загрузка данных для Paw Patrol...');
+                const response = await fetch(CONFIG.JSON_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Ищем команду по urlname
+                const teamData = data.find(team => team.urlname === CONFIG.TEAM_ID);
+                
+                if (!teamData) {
+                    console.warn('Команда PawPatrol не найдена в данных');
+                    return getDefaultTeamData();
+                }
+    
+                // Обновляем кеш
+                cachedData = teamData;
+                lastUpdateTime = Date.now();
+                return teamData;
+                
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                return cachedData || getDefaultTeamData();
+            }
+        }
+    
+        // Данные по умолчанию для Paw Patrol
+        function getDefaultTeamData() {
+            return {
+                team: "PAW PATROL",
+                logo: "/otz2025/img/PPATROL.png",
+                games: 0,
+                wins: 0,
+                losses: 0,
+                scored: 0,
+                conceded: 0,
+                percentage: "0.0",
+                difference: 0,
+                points: 0,
+                place: 1
+            };
+        }
+    
+        // Обновление таблицы
+        async function updateTeamStats() {
+            const teamData = await loadTeamData();
+            console.log('Данные команды:', teamData);
+    
+            const tableBody = document.querySelector('.table-container tbody');
+            if (!tableBody) {
+                console.error('Таблица не найдена');
+                return;
+            }
+    
+            tableBody.innerHTML = `
+                <tr>
+                    <td>${teamData.place}</td>
+                    <td class="team-cell">
+                        <img src="${teamData.logo}" class="team-logo" 
+                             onerror="this.onerror=null;this.src='/otz2025/img/OTZ3.png'">
+                        ${teamData.team}
+                    </td>
+                    <td>${teamData.games}</td>
+                    <td>${teamData.wins}</td>
+                    <td>${teamData.losses}</td>
+                    <td>${teamData.percentage}%</td>
+                    <td>${teamData.scored}</td>
+                    <td>${teamData.conceded}</td>
+                    <td>${teamData.difference}</td>
+                    <td>${teamData.points}</td>
+                </tr>
+            `;
+        }
+    
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            // Первое обновление
+            updateTeamStats();
+            
+            // Автообновление
+            const intervalId = setInterval(updateTeamStats, CONFIG.UPDATE_INTERVAL);
+            
+            // Очистка при закрытии
+            window.addEventListener('beforeunload', () => {
+                clearInterval(intervalId);
+            });
+        });
+    
+        // Существующий скрипт для шапки
         window.addEventListener('scroll', () => {
             const header = document.getElementById('header');
-            header.classList.toggle('scrolled', window.scrollY > 50);
+            if (header) {
+                header.classList.toggle('scrolled', window.scrollY > 50);
+            }
         });
     </script>
+
 </body>
 </html>
