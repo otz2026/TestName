@@ -482,7 +482,7 @@
         const CONFIG = {
             JSON_URL: "https://raw.githubusercontent.com/otz2026/otz2025/main/tournament_data.json",
             UPDATE_INTERVAL: 30000, // 30 секунд
-            TEAM_ID: "Bulldogs" // ID текущей команды
+            TEAM_ID: "Bulldogs" // Используем urlname для поиска
         };
     
         // Загрузка данных команды
@@ -493,8 +493,8 @@
                 const data = await response.json();
                 
                 // Находим данные для текущей команды
-                const teamData = Array.isArray(data.teams) 
-                    ? data.teams.find(team => team.id === CONFIG.TEAM_ID) 
+                const teamData = Array.isArray(data) 
+                    ? data.find(team => team.urlname === CONFIG.TEAM_ID) 
                     : null;
                 
                 return teamData || getDefaultTeamData();
@@ -507,7 +507,6 @@
         // Тестовые данные команды
         function getDefaultTeamData() {
             return {
-                id: "Bulldogs",
                 team: "BULLDOGS",
                 logo: "/otz2025/img/BULLDOGS.png",
                 games: 0,
@@ -515,6 +514,9 @@
                 losses: 0,
                 scored: 0,
                 conceded: 0,
+                percentage: "0.0",
+                difference: 0,
+                points: 0,
                 place: 1
             };
         }
@@ -523,13 +525,6 @@
         async function updateTeamStats() {
             const teamData = await loadTeamData();
             if (!teamData) return;
-    
-            // Рассчитываем дополнительные показатели
-            const winPercentage = teamData.games > 0 
-                ? ((teamData.wins / teamData.games) * 100).toFixed(1) 
-                : 0;
-            const pointsDiff = (teamData.scored || 0) - (teamData.conceded || 0);
-            const points = (teamData.wins || 0) * 2 + (teamData.losses || 0) * 1;
     
             // Обновляем таблицу
             const tableBody = document.getElementById('teamStats');
@@ -544,11 +539,11 @@
                         <td>${teamData.games || 0}</td>
                         <td>${teamData.wins || 0}</td>
                         <td>${teamData.losses || 0}</td>
-                        <td>${winPercentage}</td>
+                        <td>${teamData.percentage || "0.0"}</td>
                         <td>${teamData.scored || 0}</td>
                         <td>${teamData.conceded || 0}</td>
-                        <td>${pointsDiff}</td>
-                        <td>${points}</td>
+                        <td>${teamData.difference || 0}</td>
+                        <td>${teamData.points || 0}</td>
                     </tr>
                 `;
             }
