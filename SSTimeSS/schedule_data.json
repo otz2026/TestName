@@ -140,34 +140,6 @@
         },
         "score": "Не начался",
         "date": "19 июня 18:00"
-      },
-      {
-        "team1": {
-          "name": "BULLDOGS",
-          "logo": "/otz2025/img/BULLDOGS.png",
-          "link": "/otz2025/teams/BULLDOGS"
-        },
-        "team2": {
-          "name": "KITTY BOYS",
-          "logo": "/otz2025/img/KITTY BOYS.png",
-          "link": "/otz2025/teams/KITTYBOYS"
-        },
-        "score": "00",
-        "date": "30 марта в 12:02"
-      },
-      {
-        "team1": {
-          "name": "BULLDOGS",
-          "logo": "/otz2025/img/BULLDOGS.png",
-          "link": "/otz2025/teams/BULLDOGS"
-        },
-        "team2": {
-          "name": "TEXAS NERS",
-          "logo": "/otz2025/img/TN.png",
-          "link": "/otz2025/teams/TEXASNERS"
-        },
-        "score": "12  25",
-        "date": "30 марта в 12:10"
       }
     ],
     "all_star": [
