@@ -459,6 +459,15 @@
                 height: 24px;
             }
         }
+
+        .match-loading, .match-error {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #ccc;
+            width: 100%;
+        }
+        
     </style>
 </head>
 <body>
@@ -477,56 +486,19 @@
         <h1>OVER TIME ZWENIGOROD</h1>
     </div>
 
-    <!-- Основной контент страницы -->
     <div class="content">
         <!-- Заголовок "События" -->
         <h2>События</h2>
-        <div class="match-results">
-            <!-- Первый матч -->
-            <div class="match-result">
-                <div class="teams">
-                    <div class="team-logo">
-                        <img src="img/PPATROL.png" alt="Paw patrol">
-                        <div class="team-name">
-                            <a href="/otz2025/teams/PawPatrol">Paw Patrol</a>
-                        </div>
-                    </div>
-                    <div class="score">Не начался</div>
-                    <div class="team-logo">
-                        <img src="img/RWE.png" alt="RWE">
-                        <div class="team-name">
-                            <a href="/otz2025/teams/RWE">RWE</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="date">10 июня 16:00</div>
-            </div>
-
-            <!-- Второй матч -->
-            <div class="match-result">
-                <div class="teams">
-                    <div class="team-logo">
-                        <img src="img/BULLDOGS.png" alt="BULLDOGS">
-                        <div class="team-name">
-                            <a href="/otz2025/teams/Bulldogs">Bulldogs</a>
-                        </div>
-                    </div>
-                    <div class="score">Не начался</div>
-                    <div class="team-logo">
-                        <img src="img/KITTY BOYS.png" alt="KITTY BOYS">
-                        <div class="team-name">
-                            <a href="/otz2025/teams/KittyBoys">Kitty Boys</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="date">10 июня 18:00</div>
-            </div>
+        <div class="match-results" id="matchesContainer">
+            <!-- Блок для отображения загрузки -->
+            <div class="match-loading">Загрузка ближайших матчей...</div>
         </div>
-
+    
         <!-- Ссылка на расписание -->
         <div class="schedule-link">
             <a href="/TestName/schedule">Посмотреть полное расписание</a>
         </div>
+
 
         <!-- Заголовок "Новости" -->
         <h2>Новости</h2>
@@ -557,33 +529,59 @@
     <script>
         // Конфигурация
         const CONFIG = {
-            NEWS_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/news_data.json"
+            NEWS_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/news_data.json",
+            SCHEDULE_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/schedule_data.json",
+            CACHE_NAME: "otz-cache-v1",
+            OFFLINE_URL: "/otz2025/offline.html"
         };
-
-        // Функция загрузки новостей
-        async function loadNews() {
+    
+        // Основная функция инициализации
+        document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch(`${CONFIG.NEWS_DATA_URL}?t=${Date.now()}`);
+                // Загружаем данные
+                await Promise.all([
+                    loadNews(),
+                    loadUpcomingMatches()
+                ]);
                 
-                if (!response.ok) {
-                    throw new Error('Ошибка загрузки новостей');
-                }
+                // Инициализируем Service Worker
+                initServiceWorker();
+                
+                // Инициализируем другие функции
+                initScrollHeader();
+                initFooterEasterEgg();
+                initNetworkStatus();
+                initPWAInstall();
+                
+            } catch (error) {
+                console.error('Ошибка инициализации:', error);
+            }
+        });
+    
+        // ========== ФУНКЦИИ ДЛЯ НОВОСТЕЙ ========== //
+        async function loadNews() {
+            const newsContainer = document.getElementById('newsContainer');
+            if (!newsContainer) return;
+            
+            try {
+                newsContainer.innerHTML = '<div class="news-loading">Загрузка новостей...</div>';
+                
+                const response = await fetchWithCache(`${CONFIG.NEWS_DATA_URL}?t=${Date.now()}`);
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const newsData = await response.json();
                 displayNews(newsData);
+                
             } catch (error) {
-                console.error('Ошибка:', error);
-                document.getElementById('newsContainer').innerHTML = `
-                    <div class="news-error">
-                        Не удалось загрузить новости. Пожалуйста, попробуйте позже.
-                    </div>
-                `;
+                console.error('Ошибка загрузки новостей:', error);
+                showError(newsContainer, 'Не удалось загрузить новости. Пожалуйста, попробуйте позже.');
             }
         }
-
-        // Функция отображения новостей
+    
         function displayNews(newsData) {
             const newsContainer = document.getElementById('newsContainer');
+            if (!newsContainer) return;
             
             if (!newsData || newsData.length === 0) {
                 newsContainer.innerHTML = `
@@ -593,112 +591,280 @@
                 `;
                 return;
             }
-
-            let newsHTML = '';
-            
-            newsData.forEach(news => {
-                // Создаем краткое описание (первые 200 символов)
-                const shortContent = news.content.length > 200 
-                    ? news.content.substring(0, 200) + '...' 
-                    : news.content;
-                
-                newsHTML += `
-                    <div class="news-item">
-                        <img src="${news.image || 'img/NEWS_NO.png'}" alt="${news.title}">
-                        <div class="text">
-                            <h3>${news.title}</h3>
-                            <p>${shortContent}</p>
-                            <a href="/TestName/news" class="read-more">Читать далее</a>
-                        </div>
+    
+            // Сортируем новости по дате (новые сначала) и берем 2 последние
+            const sortedNews = [...newsData]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 2);
+    
+            newsContainer.innerHTML = sortedNews.map(news => `
+                <div class="news-item">
+                    <img src="${news.image || 'img/NEWS_NO.png'}" 
+                         alt="${news.title}" 
+                         onerror="this.src='img/NEWS_NO.png'">
+                    <div class="text">
+                        <h3>${news.title}</h3>
+                        <p>${news.content.length > 200 ? 
+                            news.content.substring(0, 200) + '...' : 
+                            news.content}</p>
+                        <a href="/TestName/news" class="read-more">Читать далее</a>
                     </div>
-                `;
-            });
-
-            newsContainer.innerHTML = newsHTML;
+                </div>
+            `).join('');
         }
-
+    
+        // ========== ФУНКЦИИ ДЛЯ РАСПИСАНИЯ ========== //
+        async function loadUpcomingMatches() {
+            const matchesContainer = document.getElementById('matchesContainer');
+            if (!matchesContainer) return;
+            
+            try {
+                matchesContainer.innerHTML = '<div class="match-loading">Загрузка ближайших матчей...</div>';
+                
+                const response = await fetchWithCache(`${CONFIG.SCHEDULE_DATA_URL}?t=${Date.now()}`);
+                
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const scheduleData = await response.json();
+                displayUpcomingMatches(scheduleData.schedule);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки расписания:', error);
+                showError(matchesContainer, 'Не удалось загрузить расписание. Пожалуйста, попробуйте позже.');
+            }
+        }
+    
+        function parseCustomDate(dateStr) {
+            if (!dateStr) return null;
+            
+            const months = {
+                'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3,
+                'мая': 4, 'июня': 5, 'июля': 6, 'августа': 7,
+                'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11
+            };
+            
+            const match = dateStr.match(/(\d+) (\w+) (\d+):(\d+)/);
+            if (!match) return null;
+            
+            const [, day, month, hours, minutes] = match;
+            const monthIndex = months[month.toLowerCase()];
+            const year = 2025; // Фиксированный год
+            
+            return new Date(year, monthIndex, parseInt(day), parseInt(hours), parseInt(minutes));
+        }
+    
+        function displayUpcomingMatches(scheduleData) {
+            const matchesContainer = document.getElementById('matchesContainer');
+            if (!matchesContainer) return;
+            
+            try {
+                // Собираем все матчи из всех этапов
+                const allMatches = [
+                    ...(scheduleData.opening_night || []),
+                    ...(scheduleData.all_star || []),
+                    ...(scheduleData.after_all_star || [])
+                ];
+    
+                // Фильтруем и сортируем матчи
+                const now = new Date();
+                const upcomingMatches = allMatches
+                    .map(match => ({
+                        ...match,
+                        dateObj: parseCustomDate(match.date)
+                    }))
+                    .filter(match => match.dateObj && match.dateObj > now)
+                    .sort((a, b) => a.dateObj - b.dateObj)
+                    .slice(0, 2); // Берем 2 ближайших
+    
+                if (upcomingMatches.length === 0) {
+                    matchesContainer.innerHTML = `
+                        <div class="match-result">
+                            <div class="teams">
+                                <div class="team-logo">
+                                    <img src="img/PPATROL.png" alt="Paw patrol">
+                                    <div class="team-name">
+                                        <a href="/otz2025/teams/PawPatrol">Paw Patrol</a>
+                                    </div>
+                                </div>
+                                <div class="score">Нет запланированных матчей</div>
+                                <div class="team-logo">
+                                    <img src="img/RWE.png" alt="RWE">
+                                    <div class="team-name">
+                                        <a href="/otz2025/teams/RWE">RWE</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="date">Следите за обновлениями</div>
+                        </div>
+                    `;
+                    return;
+                }
+    
+                matchesContainer.innerHTML = upcomingMatches.map(match => `
+                    <div class="match-result">
+                        <div class="teams">
+                            <div class="team-logo">
+                                <img src="${match.team1.logo || 'img/PPATROL.png'}" 
+                                     alt="${match.team1.name}"
+                                     onerror="this.src='img/PPATROL.png'">
+                                <div class="team-name">
+                                    <a href="${match.team1.link || '/otz2025/teams/PawPatrol'}">${match.team1.name}</a>
+                                </div>
+                            </div>
+                            <div class="score">${match.score || 'Не начался'}</div>
+                            <div class="team-logo">
+                                <img src="${match.team2.logo || 'img/RWE.png'}" 
+                                     alt="${match.team2.name}"
+                                     onerror="this.src='img/RWE.png'">
+                                <div class="team-name">
+                                    <a href="${match.team2.link || '/otz2025/teams/RWE'}">${match.team2.name}</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="date">${match.date}</div>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Ошибка отображения матчей:', error);
+                showError(matchesContainer, 'Ошибка обработки данных расписания');
+            }
+        }
+    
+        // ========== ОБЩИЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ========== //
+        async function fetchWithCache(url) {
+            try {
+                // Пробуем получить свежие данные
+                const response = await fetch(url);
+                if (response.ok) {
+                    // Кэшируем успешный ответ
+                    const cache = await caches.open(CONFIG.CACHE_NAME);
+                    await cache.put(url, response.clone());
+                    return response;
+                }
+                // Если сетевой запрос не удался, пробуем кэш
+                const cachedResponse = await caches.match(url);
+                return cachedResponse || response;
+            } catch (error) {
+                // Если всё провалилось, пробуем кэш
+                const cachedResponse = await caches.match(url);
+                if (cachedResponse) return cachedResponse;
+                throw error;
+            }
+        }
+    
+        function showError(container, message) {
+            if (!container) return;
+            container.innerHTML = `
+                <div class="error-message">
+                    ${message}
+                    <button onclick="location.reload()">Обновить</button>
+                </div>
+            `;
+        }
+    
+        // ========== PWA И SERVICE WORKER ========== //
+        function initServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/otz2025/sw.js')
+                    .then(reg => {
+                        console.log('ServiceWorker зарегистрирован');
+                        // Автоматическое обновление каждые 24 часа
+                        setInterval(() => reg.update(), 86400000);
+                    })
+                    .catch(err => console.error('Ошибка регистрации ServiceWorker:', err));
+            }
+        }
+    
+        function initPWAInstall() {
+            let deferredPrompt;
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                const installBtn = document.getElementById('install-btn');
+                if (installBtn) installBtn.style.display = 'block';
+            });
+    
+            const installBtn = document.getElementById('install-btn');
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            console.log('PWA установлен');
+                        }
+                        deferredPrompt = null;
+                        installBtn.style.display = 'none';
+                    }
+                });
+            }
+        }
+    
+        // ========== ДРУГИЕ ФУНКЦИИ ========== //
+        function initScrollHeader() {
+            const header = document.getElementById('header');
+            if (header) {
+                window.addEventListener('scroll', () => {
+                    header.classList.toggle('scrolled', window.scrollY > 50);
+                });
+            }
+        }
+    
+        function initNetworkStatus() {
+            const offlineAlert = document.getElementById('offline-alert');
+            if (offlineAlert) {
+                const updateStatus = () => {
+                    offlineAlert.style.display = navigator.onLine ? 'none' : 'block';
+                };
+                window.addEventListener('online', updateStatus);
+                window.addEventListener('offline', updateStatus);
+                updateStatus();
+            }
+        }
+    
+        function initFooterEasterEgg() {
+            const footerText = document.querySelector('footer p');
+            const hiddenLink = document.querySelector('footer .hidden');
+            
+            if (footerText && hiddenLink) {
+                footerText.addEventListener('click', () => {
+                    hiddenLink.classList.remove('hidden');
+                    setTimeout(() => hiddenLink.classList.add('hidden'), 2000);
+                });
+            }
+        }
+    
         // Добавляем стили для состояний загрузки
         const style = document.createElement('style');
         style.textContent = `
-            .news-loading, .news-error, .news-empty {
+            .news-loading, .news-error, .news-empty,
+            .match-loading, .match-error {
                 text-align: center;
                 padding: 40px;
                 font-size: 18px;
                 color: #ccc;
                 width: 100%;
             }
+            .error-message {
+                text-align: center;
+                padding: 20px;
+                background: rgba(255, 0, 0, 0.1);
+                border-radius: 8px;
+                margin: 10px 0;
+            }
+            .error-message button {
+                margin-top: 10px;
+                padding: 8px 16px;
+                background: #dd4710;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
         `;
         document.head.appendChild(style);
-
-        // Загружаем новости при загрузке страницы
-        document.addEventListener('DOMContentLoaded', loadNews);
-
-        // Регистрация Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/otz2025/sw.js')
-                    .then(reg => {
-                        console.log('ServiceWorker успешно зарегистрирован');
-                        
-                        // Автоматическая проверка обновлений
-                        setInterval(() => reg.update(), 86400000); // Каждые 24 часа
-                    })
-                    .catch(err => console.log('Ошибка регистрации ServiceWorker:', err));
-            });
-        }
-
-        // Управление кнопкой установки
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-btn').style.display = 'block';
-        });
-
-        document.getElementById('install-btn').addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(choice => {
-                    if (choice.outcome === 'accepted') {
-                        console.log('Пользователь установил PWA');
-                    }
-                    document.getElementById('install-btn').style.display = 'none';
-                });
-            }
-        });
-
-        // Проверка подключения
-        function updateNetworkStatus() {
-            document.getElementById('offline-alert').style.display = 
-                navigator.onLine ? 'none' : 'block';
-        }
-        window.addEventListener('online', updateNetworkStatus);
-        window.addEventListener('offline', updateNetworkStatus);
-        updateNetworkStatus();
-
-        
-        // Скрипт для изменения фона шапки при скролле
-        window.addEventListener('scroll', () => {
-            const header = document.getElementById('header');
-            header.classList.toggle('scrolled', window.scrollY > 50);
-        });
-
-        // Скрипт для показа слова "Абоюдно" при клике на текст в футере
-        const footerText = document.querySelector('footer p');
-        const hiddenLink = document.querySelector('footer .hidden');
-
-        footerText.addEventListener('click', () => {
-            hiddenLink.classList.remove('hidden'); // Показываем слово
-            setTimeout(() => {
-                hiddenLink.classList.add('hidden'); // Скрываем слово через 2 секунды
-            }, 2000);
-        });
-     
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/otz2025/sw.js')
-                .then(reg => console.log('SW registered'))
-                .catch(err => console.log('SW registration failed:', err));
-        }
     </script>
 </body>
 </html>
