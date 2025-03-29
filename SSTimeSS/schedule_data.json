@@ -284,34 +284,6 @@
         },
         "score": "Не начался",
         "date": "4 июля 16:00"
-      },
-      {
-        "team1": {
-          "name": "RWE",
-          "logo": "/otz2025/img/RWE.png",
-          "link": "/otz2025/teams/RWE"
-        },
-        "team2": {
-          "name": "Paw Patrol",
-          "logo": "/otz2025/img/PPATROL.png",
-          "link": "/otz2025/teams/PawPatrol"
-        },
-        "score": "Не начался",
-        "date": "4 июля 18:00"
-      },
-      {
-        "team1": {
-          "name": "BULLDOGS",
-          "logo": "/otz2025/img/BULLDOGS.png",
-          "link": "/otz2025/teams/BULLDOGS"
-        },
-        "team2": {
-          "name": "RWE",
-          "logo": "/otz2025/img/RWE.png",
-          "link": "/otz2025/teams/RWE"
-        },
-        "score": "21 - 23",
-        "date": "30 ноября в 12:14"
       }
     ]
   }
