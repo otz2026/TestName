@@ -13,7 +13,7 @@
           "link": "/otz2025/teams/RWE"
         },
         "score": "Не начался",
-        "date": "10 июня в 16:01"
+        "date": "10 июня в 16:00"
       },
       {
         "team1": {
@@ -140,6 +140,20 @@
         },
         "score": "Не начался",
         "date": "19 июня 18:00"
+      },
+      {
+        "team1": {
+          "name": "BULLDOGS",
+          "logo": "/otz2025/img/BULLDOGS.png",
+          "link": "/otz2025/teams/BULLDOGS"
+        },
+        "team2": {
+          "name": "TEXAS NERS",
+          "logo": "/otz2025/img/TN.png",
+          "link": "/otz2025/teams/TEXASNERS"
+        },
+        "score": "Не начался",
+        "date": "31 марта в 18:00"
       }
     ],
     "all_star": [
