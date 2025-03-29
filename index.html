@@ -526,6 +526,7 @@
         </div>
     </footer>
 
+
     <script>
         // Конфигурация
         const CONFIG = {
@@ -637,20 +638,28 @@
         function parseCustomDate(dateStr) {
             if (!dateStr) return null;
             
+            // Пример формата: "1 июня 19:00"
             const months = {
                 'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3,
                 'мая': 4, 'июня': 5, 'июля': 6, 'августа': 7,
                 'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11
             };
             
-            const match = dateStr.match(/(\d+) (\w+) (\d+):(\d+)/);
-            if (!match) return null;
+            const parts = dateStr.split(' ');
+            if (parts.length !== 3) return null;
             
-            const [, day, month, hours, minutes] = match;
-            const monthIndex = months[month.toLowerCase()];
-            const year = 2025; // Фиксированный год
+            const day = parseInt(parts[0]);
+            const month = parts[1].toLowerCase();
+            const timeParts = parts[2].split(':');
             
-            return new Date(year, monthIndex, parseInt(day), parseInt(hours), parseInt(minutes));
+            if (!months.hasOwnProperty(month) || timeParts.length !== 2) return null;
+            
+            const monthIndex = months[month];
+            const hours = parseInt(timeParts[0]);
+            const minutes = parseInt(timeParts[1]);
+            const year = new Date().getFullYear(); // Текущий год
+            
+            return new Date(year, monthIndex, day, hours, minutes);
         }
     
         function displayUpcomingMatches(scheduleData) {
@@ -711,7 +720,7 @@
                                     <a href="${match.team1.link || '/otz2025/teams/PawPatrol'}">${match.team1.name}</a>
                                 </div>
                             </div>
-                            <div class="score">${match.score || 'Не начался'}</div>
+                            <div class="score">${match.score || 'vs'}</div>
                             <div class="team-logo">
                                 <img src="${match.team2.logo || 'img/RWE.png'}" 
                                      alt="${match.team2.name}"
