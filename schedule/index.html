@@ -333,179 +333,181 @@
     </footer>
 
     <script>
-        // Конфигурация
-        const CONFIG = {
-            GITHUB_USER: "otz2026",
-            REPO_NAME: "TestName",
-            SCHEDULE_FILE_PATH: "SSTimeSS/schedule_data.json"
-        };
-
-        // Основная функция загрузки
-        async function loadSchedule() {
-            try {
-                const response = await fetch(
-                    `https://raw.githubusercontent.com/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/main/${CONFIG.SCHEDULE_FILE_PATH}?t=${Date.now()}`
-                );
-                if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
-                
-                const data = await response.json();
-                displaySchedule(data.schedule);
-            } catch (error) {
-                console.error("Ошибка:", error);
-                document.getElementById('scheduleContainer').innerHTML = `
-                    <div style="color: #ff6b6b; text-align: center; padding: 20px;">
-                        Ошибка загрузки расписания. Попробуйте обновить страницу.
-                    </div>
-                `;
-            }
-        }
-
-        // Функция отображения расписания
-        function displaySchedule(scheduleData) {
-            if (!scheduleData) {
-                document.getElementById('scheduleContainer').innerHTML = `
-                    <div style="text-align: center; color: #aaa; padding: 20px;">
-                        Расписание временно недоступно
-                    </div>
-                `;
-                return;
-            }
-
-            // 1. Собираем все матчи в один массив с правильными датами
-            const allMatches = [];
+    // Конфигурация
+    const CONFIG = {
+        GITHUB_USER: "otz2026",
+        REPO_NAME: "TestName",
+        SCHEDULE_FILE_PATH: "SSTimeSS/schedule_data.json"
+    };
+    
+    // Основная функция загрузки
+    async function loadSchedule() {
+        try {
+            const response = await fetch(
+                `https://raw.githubusercontent.com/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/main/${CONFIG.SCHEDULE_FILE_PATH}?t=${Date.now()}`
+            );
+            if (!response.ok) throw new Error(`Ошибка загрузки: ${response.status}`);
             
-            // Добавляем матчи каждого этапа
-            ['opening_night', 'all_star', 'after_all_star'].forEach(stage => {
-                if (scheduleData[stage]?.length) {
-                    scheduleData[stage].forEach(match => {
-                        allMatches.push({
-                            ...match,
-                            stageName: getStageName(stage),
-                            dateObj: parseDateString(match.date),
-                            // Исправляем пути к логотипам
-                            team1: {
-                                ...match.team1,
-                                logo: fixLogoPath(match.team1.logo)
-                            },
-                            team2: {
-                                ...match.team2,
-                                logo: fixLogoPath(match.team2.logo)
-                            }
-                        });
-                    });
-                }
-            });
-
-            // 2. Сортируем матчи по дате (от ближайших)
-            allMatches.sort((a, b) => a.dateObj - b.dateObj);
-
-            // 3. Группируем по этапам после сортировки
-            const groupedMatches = {};
-            allMatches.forEach(match => {
-                if (!groupedMatches[match.stageName]) {
-                    groupedMatches[match.stageName] = [];
-                }
-                groupedMatches[match.stageName].push(match);
-            });
-
-            // 4. Отображаем результат
-            renderMatches(groupedMatches);
-        }
-
-        // Функции-помощники:
-
-        // Получаем красивое название этапа
-        function getStageName(stageKey) {
-            const stages = {
-                'opening_night': 'OPENING NIGHT',
-                'all_star': 'ALL-STAR',
-                'after_all_star': 'После ALL-STAR'
-            };
-            return stages[stageKey] || stageKey;
-        }
-
-        // Парсим дату из строки "10 июня 16:00"
-        function parseDateString(dateStr) {
-            const months = {
-                'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3,
-                'мая': 4, 'июня': 5, 'июля': 6, 'августа': 7,
-                'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11
-            };
-            
-            const parts = dateStr.split(' ');
-            const day = parseInt(parts[0]);
-            const month = months[parts[1]];
-            const [hours, minutes] = parts[2].split(':').map(Number);
-            const year = new Date().getFullYear(); // Используем текущий год
-            
-            return new Date(year, month, day, hours, minutes);
-        }
-
-        // Исправляем путь к логотипу
-        function fixLogoPath(logo) {
-            if (!logo) return '/otz2025/img/default-team.png';
-            return logo.startsWith('/') ? logo : `/otz2025/img/${logo}`;
-        }
-
-        // Рендерим сгруппированные матчи
-        function renderMatches(groupedMatches) {
-            const container = document.getElementById('scheduleContainer');
-            let html = '';
-            
-            // Перебираем этапы в порядке их следования
-            ['OPENING NIGHT', 'ALL-STAR', 'После ALL-STAR'].forEach(stage => {
-                if (groupedMatches[stage]?.length) {
-                    html += `
-                        <div class="table-header">
-                            <h3>Матчи ${stage}</h3>
-                            <hr>
-                        </div>
-                    `;
-                    
-                    groupedMatches[stage].forEach(match => {
-                        html += `
-                            <div class="match-result">
-                                <div class="teams">
-                                    <div class="team-logo">
-                                        <img src="${match.team1.logo}" alt="${match.team1.name}" 
-                                             onerror="this.src='/otz2025/img/default-team.png'">
-                                        <div class="team-name">
-                                            <a href="${match.team1.link || '#'}">${match.team1.name}</a>
-                                        </div>
-                                    </div>
-                                    <div class="score">${match.score || 'Не начался'}</div>
-                                    <div class="team-logo">
-                                        <img src="${match.team2.logo}" alt="${match.team2.name}" 
-                                             onerror="this.src='/otz2025/img/default-team.png'">
-                                        <div class="team-name">
-                                            <a href="${match.team2.link || '#'}">${match.team2.name}</a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="date">${match.date}</div>
-                            </div>
-                        `;
-                    });
-                }
-            });
-            
-            container.innerHTML = html || `
-                <div style="text-align: center; color: #aaa; padding: 20px;">
-                    Нет данных о матчах
+            const data = await response.json();
+            displaySchedule(data.schedule);
+        } catch (error) {
+            console.error("Ошибка:", error);
+            document.getElementById('scheduleContainer').innerHTML = `
+                <div style="color: #ff6b6b; text-align: center; padding: 20px;">
+                    Ошибка загрузки расписания. Попробуйте обновить страницу.
                 </div>
             `;
         }
-
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSchedule();
-            
-            // Обработчик скролла для шапки
-            window.addEventListener('scroll', () => {
-                const header = document.getElementById('header');
-                header.classList.toggle('scrolled', window.scrollY > 50);
-            });
+    }
+    
+    // Функция отображения расписания
+    function displaySchedule(scheduleData) {
+        if (!scheduleData) {
+            document.getElementById('scheduleContainer').innerHTML = `
+                <div style="text-align: center; color: #aaa; padding: 20px;">
+                    Расписание временно недоступно
+                </div>
+            `;
+            return;
+        }
+    
+        // Собираем все матчи с правильными датами
+        const allMatches = [];
+        const currentYear = new Date().getFullYear(); // Используем текущий год для всех матчей
+        
+        // Добавляем матчи каждого этапа
+        ['opening_night', 'all_star', 'after_all_star'].forEach(stage => {
+            if (scheduleData[stage]?.length) {
+                scheduleData[stage].forEach(match => {
+                    const dateObj = parseDateString(match.date, currentYear);
+                    allMatches.push({
+                        ...match,
+                        stageName: getStageName(stage),
+                        dateObj: dateObj,
+                        team1: {
+                            ...match.team1,
+                            logo: fixLogoPath(match.team1.logo)
+                        },
+                        team2: {
+                            ...match.team2,
+                            logo: fixLogoPath(match.team2.logo)
+                        }
+                    });
+                });
+            }
         });
+    
+        // Сортируем матчи по дате (от ближайших к самым дальним)
+        allMatches.sort((a, b) => a.dateObj - b.dateObj);
+    
+        // Группируем по этапам после сортировки
+        const groupedMatches = {};
+        allMatches.forEach(match => {
+            if (!groupedMatches[match.stageName]) {
+                groupedMatches[match.stageName] = [];
+            }
+            groupedMatches[match.stageName].push(match);
+        });
+    
+        // Отображаем результат
+        renderMatches(groupedMatches);
+    }
+    
+    // Функции-помощники:
+    
+    // Получаем название этапа
+    function getStageName(stageKey) {
+        const stages = {
+            'opening_night': 'OPENING NIGHT',
+            'all_star': 'ALL-STAR',
+            'after_all_star': 'После ALL-STAR'
+        };
+        return stages[stageKey] || stageKey;
+    }
+    
+    // Парсим дату с указанием года
+    function parseDateString(dateStr, year) {
+        const months = {
+            'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3,
+            'мая': 4, 'июня': 5, 'июля': 6, 'августа': 7,
+            'сентября': 8, 'октября': 9, 'ноября': 10, 'декабря': 11
+        };
+        
+        const parts = dateStr.split(' ');
+        const day = parseInt(parts[0]);
+        const month = months[parts[1]];
+        const [hours, minutes] = parts[2].split(':').map(Number);
+        
+        return new Date(year, month, day, hours, minutes);
+    }
+    
+    // Исправляем путь к логотипу
+    function fixLogoPath(logo) {
+        if (!logo) return '/otz2025/img/default-team.png';
+        return logo.startsWith('/') ? logo : `/otz2025/img/${logo}`;
+    }
+    
+    // Рендерим сгруппированные матчи
+    function renderMatches(groupedMatches) {
+        const container = document.getElementById('scheduleContainer');
+        const now = new Date();
+        let html = '';
+        
+        // Порядок отображения этапов
+        ['OPENING NIGHT', 'ALL-STAR', 'После ALL-STAR'].forEach(stage => {
+            if (groupedMatches[stage]?.length) {
+                html += `
+                    <div class="table-header">
+                        <h3>Матчи ${stage}</h3>
+                        <hr>
+                    </div>
+                `;
+                
+                groupedMatches[stage].forEach(match => {
+                    const isPast = match.dateObj < now;
+                    html += `
+                        <div class="match-result ${isPast ? 'past-match' : ''}">
+                            <div class="teams">
+                                <div class="team-logo">
+                                    <img src="${match.team1.logo}" alt="${match.team1.name}" 
+                                         onerror="this.src='/otz2025/img/default-team.png'">
+                                    <div class="team-name">
+                                        <a href="${match.team1.link || '#'}">${match.team1.name}</a>
+                                    </div>
+                                </div>
+                                <div class="score">${match.score || 'Не начался'}</div>
+                                <div class="team-logo">
+                                    <img src="${match.team2.logo}" alt="${match.team2.name}" 
+                                         onerror="this.src='/otz2025/img/default-team.png'">
+                                    <div class="team-name">
+                                        <a href="${match.team2.link || '#'}">${match.team2.name}</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="date">${match.date}</div>
+                        </div>
+                    `;
+                });
+            }
+        });
+        
+        container.innerHTML = html || `
+            <div style="text-align: center; color: #aaa; padding: 20px;">
+                Нет данных о матчах
+            </div>
+        `;
+    }
+    
+    // Инициализация при загрузке страницы
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSchedule();
+        
+        // Обработчик скролла для шапки
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            header.classList.toggle('scrolled', window.scrollY > 50);
+        });
+    });
     </script>
 </body>
 </html>
