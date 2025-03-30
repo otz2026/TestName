@@ -494,13 +494,23 @@
         const CONFIG = {
             JSON_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/tournament_data.json",
             UPDATE_INTERVAL: 30000, // 30 секунд
-            TEAM_ID: "KittyBoys" // Должно совпадать с urlname в JSON
+            TEAM_ID: "RWE", // Должно совпадать с urlname в JSON
+            DEFAULT_LOGO: "/otz2025/img/OTZ2.png"
         };
-
+    
+        // Кеширование данных
+        let cachedData = null;
+        let lastUpdateTime = 0;
+    
         // Загрузка данных команды
         async function loadTeamData() {
             try {
-                console.log('[DEBUG] Загрузка данных команды...');
+                // Используем кеш, если данные свежие
+                if (cachedData && Date.now() - lastUpdateTime < CONFIG.UPDATE_INTERVAL) {
+                    return cachedData;
+                }
+    
+                console.log('Загрузка данных для RWE...');
                 const response = await fetch(CONFIG.JSON_URL);
                 
                 if (!response.ok) {
@@ -508,29 +518,31 @@
                 }
                 
                 const data = await response.json();
-                console.log('[DEBUG] Данные получены:', data);
-
-                // Поиск команды по urlname
+                
+                // Ищем команду по urlname
                 const teamData = data.find(team => team.urlname === CONFIG.TEAM_ID);
                 
                 if (!teamData) {
-                    console.warn(`Команда ${CONFIG.TEAM_ID} не найдена`);
+                    console.warn('Команда RWE не найдена в данных');
                     return getDefaultTeamData();
                 }
-                
+    
+                // Обновляем кеш
+                cachedData = teamData;
+                lastUpdateTime = Date.now();
                 return teamData;
                 
             } catch (error) {
-                console.error('[ERROR] Ошибка загрузки данных:', error);
-                return getDefaultTeamData();
+                console.error('Ошибка загрузки данных:', error);
+                return cachedData || getDefaultTeamData();
             }
         }
-
-        // Данные по умолчанию
+    
+        // Данные по умолчанию для RWE
         function getDefaultTeamData() {
             return {
-                team: "KITTY BOYS",
-                logo: "/otz2025/img/KITTY BOYS.png",
+                team: "RWE",
+                logo: "/otz2025/img/RWE.png",
                 games: 0,
                 wins: 0,
                 losses: 0,
@@ -542,73 +554,59 @@
                 place: 1
             };
         }
-
+    
         // Обновление таблицы
         async function updateTeamStats() {
             const teamData = await loadTeamData();
-            console.log('[DEBUG] Данные для отображения:', teamData);
-
+            console.log('Данные команды:', teamData);
+    
             const tableBody = document.getElementById('teamStats');
             if (!tableBody) {
-                console.error('[ERROR] Элемент teamStats не найден');
+                console.error('Таблица не найдена');
                 return;
             }
-
-            // Форматируем процентный показатель
-            const winPercentage = teamData.percentage.includes('%') 
-                ? teamData.percentage 
-                : `${teamData.percentage}%`;
-
+    
             tableBody.innerHTML = `
                 <tr>
-                    <td>${teamData.place || '-'}</td>
+                    <td>${teamData.place}</td>
                     <td class="team-cell">
-                        <img src="${teamData.logo}" 
-                             class="team-logo"
-                             alt="${teamData.team}"
-                             onerror="this.src='/otz2025/img/OTZ2.png'">
+                        <img src="${teamData.logo}" class="team-logo" 
+                             onerror="this.onerror=null;this.src='${CONFIG.DEFAULT_LOGO}'">
                         ${teamData.team}
                     </td>
-                    <td>${teamData.games || 0}</td>
-                    <td>${teamData.wins || 0}</td>
-                    <td>${teamData.losses || 0}</td>
-                    <td>${winPercentage}</td>
-                    <td>${teamData.scored || 0}</td>
-                    <td>${teamData.conceded || 0}</td>
-                    <td>${teamData.difference || 0}</td>
-                    <td>${teamData.points || 0}</td>
+                    <td>${teamData.games}</td>
+                    <td>${teamData.wins}</td>
+                    <td>${teamData.losses}</td>
+                    <td>${teamData.percentage}%</td>
+                    <td>${teamData.scored}</td>
+                    <td>${teamData.conceded}</td>
+                    <td>${teamData.difference}</td>
+                    <td>${teamData.points}</td>
                 </tr>
             `;
         }
-
+    
         // Инициализация
-        function init() {
-            // Первое обновление данных
+        document.addEventListener('DOMContentLoaded', () => {
+            // Первое обновление
             updateTeamStats();
             
-            // Автообновление каждые 30 секунд
+            // Автообновление
             const intervalId = setInterval(updateTeamStats, CONFIG.UPDATE_INTERVAL);
-            
-            // Эффект при скролле
-            window.addEventListener('scroll', () => {
-                const header = document.getElementById('header');
-                if (header) {
-                    header.classList.toggle('scrolled', window.scrollY > 50);
-                }
-            });
             
             // Очистка при закрытии
             window.addEventListener('beforeunload', () => {
                 clearInterval(intervalId);
             });
-        }
-
-        // Запуск приложения
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
+        });
+    
+        // Существующий скрипт для шапки
+        window.addEventListener('scroll', () => {
+            const header = document.getElementById('header');
+            if (header) {
+                header.classList.toggle('scrolled', window.scrollY > 50);
+            }
+        });
     </script>
 </body>
 </html>
