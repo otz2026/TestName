@@ -9,7 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="../otz2025/img/OTZ3.png">
+
     <style>
+        /* Основные стили (оставлены без изменений) */
         :root {
             --primary-color: #dd4710;
             --secondary-color: #2a2a2a;
@@ -38,6 +40,54 @@
             flex-direction: column;
         }
         
+        /* Добавленные стили для наград */
+        .awards-section {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .awards-editor {
+            background-color: var(--bg-light);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .award-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .award-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .image-upload-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .upload-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        
+        .upload-btn:hover {
+            background-color: var(--hover-color);
+        }
+
         /* Навигационное меню */
         .nav-menu {
             background-color: var(--bg-dark);
@@ -352,9 +402,9 @@
             }
         }
     </style>
+    
 </head>
 <body>
-    <!-- Навигационное меню -->
     <nav class="nav-menu">
         <div class="nav-title">OTZ Админ-панель</div>
         <div class="nav-links">
@@ -417,8 +467,12 @@
             </div>
             
             <div class="form-group">
-                <label for="newsImage">URL изображения:</label>
-                <input type="text" id="newsImage" placeholder="https://example.com/image.jpg">
+                <label for="newsImage">Изображение:</label>
+                <div class="image-upload-container">
+                    <input type="text" id="newsImage" placeholder="https://example.com/image.jpg">
+                    <button class="upload-btn" onclick="document.getElementById('newsImageFileInput').click()">Выбрать файл</button>
+                    <input type="file" id="newsImageFileInput" accept="image/*" style="display: none;">
+                </div>
                 <img id="imagePreview" class="preview-image" style="display: none;">
             </div>
             
@@ -444,6 +498,9 @@
             <h3>Список новостей:</h3>
             <div id="newsListContainer"></div>
         </div>
+        
+        <!-- Блок управления наградами -->
+        <div id="awardsContainer" class="awards-section"></div>
     </div>
 
     <script>
@@ -454,11 +511,17 @@
             TABLE_FILE_PATH: "SSTimeSS/tournament_data.json",
             NEWS_FILE_PATH: "SSTimeSS/news_data.json",
             SCHEDULE_FILE_PATH: "SSTimeSS/schedule_data.json",
+            AWARDS_FILE_PATH: "SSTimeSS/awards_data.json",
+            IMAGES_PATH: "SSTimeSS/img/",
             GITHUB_TOKEN: ""
         };
 
         let tableData = [];
         let newsData = [];
+        let awardsData = {
+            mvp: { name: "Не определен", image: "/otz2025/img/MVP.png" },
+            dpoy: { name: "Не определен", image: "/otz2025/img/DPOY.png" }
+        };
 
         // ========== Table Functions ========== //
         function calculateFIBAStats(team) {
@@ -855,6 +918,301 @@
             }
         }
 
+        // ========== Awards Functions ========== //
+        async function loadAwards() {
+            try {
+                const awardsUrl = `https://raw.githubusercontent.com/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/main/${CONFIG.AWARDS_FILE_PATH}?t=${Date.now()}`;
+                const response = await fetch(awardsUrl);
+                
+                if (!response.ok) throw new Error(`Ошибка загрузки наград: ${response.status}`);
+                
+                const data = await response.json();
+                if (data.mvp) awardsData.mvp = data.mvp;
+                if (data.dpoy) awardsData.dpoy = data.dpoy;
+                
+                renderAwards();
+                
+            } catch (error) {
+                console.error("Ошибка загрузки наград:", error);
+                renderAwards();
+            }
+        }
+
+        function renderAwards() {
+            const awardsContainer = document.getElementById("awardsContainer");
+            if (!awardsContainer) return;
+            
+            awardsContainer.innerHTML = `
+                <div class="awards-editor">
+                    <h3 class="section-title">Настройки наград</h3>
+                    
+                    <div class="award-item">
+                        <h4>MVP сезона</h4>
+                        <div class="form-group">
+                            <label for="mvpName">Игрок:</label>
+                            <input type="text" id="mvpName" value="${awardsData.mvp.name}">
+                        </div>
+                        <div class="form-group">
+                            <label for="mvpImage">Изображение:</label>
+                            <div class="image-upload-container">
+                                <input type="text" id="mvpImageUrl" value="${awardsData.mvp.image}" placeholder="URL изображения">
+                                <button class="upload-btn" onclick="document.getElementById('mvpImageInput').click()">Выбрать файл</button>
+                                <input type="file" id="mvpImageInput" accept="image/*" style="display: none;">
+                            </div>
+                            <img src="${awardsData.mvp.image}" id="mvpImagePreview" class="preview-image">
+                        </div>
+                    </div>
+                    
+                    <div class="award-item">
+                        <h4>Лучший защитник (DPOY)</h4>
+                        <div class="form-group">
+                            <label for="dpoyName">Игрок:</label>
+                            <input type="text" id="dpoyName" value="${awardsData.dpoy.name}">
+                        </div>
+                        <div class="form-group">
+                            <label for="dpoyImage">Изображение:</label>
+                            <div class="image-upload-container">
+                                <input type="text" id="dpoyImageUrl" value="${awardsData.dpoy.image}" placeholder="URL изображения">
+                                <button class="upload-btn" onclick="document.getElementById('dpoyImageInput').click()">Выбрать файл</button>
+                                <input type="file" id="dpoyImageInput" accept="image/*" style="display: none;">
+                            </div>
+                            <img src="${awardsData.dpoy.image}" id="dpoyImagePreview" class="preview-image">
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button id="saveAwardsBtn">Сохранить награды</button>
+                    </div>
+                    <div id="awardsStatusMsg" class="status-message"></div>
+                </div>
+            `;
+            
+            // Настройка обработчиков событий для загрузки изображений
+            document.getElementById('mvpImageInput').addEventListener('change', function(e) {
+                handleImageUpload(e, 'mvpImagePreview', 'mvpImageUrl', 'mvp');
+            });
+            
+            document.getElementById('dpoyImageInput').addEventListener('change', function(e) {
+                handleImageUpload(e, 'dpoyImagePreview', 'dpoyImageUrl', 'dpoy');
+            });
+            
+            document.getElementById('mvpImageUrl').addEventListener('input', function() {
+                const preview = document.getElementById('mvpImagePreview');
+                preview.src = this.value;
+            });
+            
+            document.getElementById('dpoyImageUrl').addEventListener('input', function() {
+                const preview = document.getElementById('dpoyImagePreview');
+                preview.src = this.value;
+            });
+            
+            document.getElementById('saveAwardsBtn').addEventListener('click', saveAwards);
+        }
+
+        async function handleImageUpload(event, previewId, urlInputId, awardType) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Проверяем тип файла
+            if (!file.type.match('image.*')) {
+                showAwardsStatus('Пожалуйста, выберите файл изображения', 'error');
+                return;
+            }
+            
+            // Проверяем размер файла (максимум 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showAwardsStatus('Размер файла не должен превышать 2MB', 'error');
+                return;
+            }
+            
+            showAwardsStatus('Загрузка изображения...', 'info');
+            
+            try {
+                // Читаем файл как Data URL
+                const imageDataUrl = await readFileAsDataURL(file);
+                
+                // Формируем имя файла
+                const fileName = `${awardType}_${Date.now()}.${file.name.split('.').pop()}`;
+                const imagePath = `${CONFIG.IMAGES_PATH}${fileName}`;
+                
+                // Загружаем изображение на GitHub
+                const imageUrl = await uploadImageToGitHub(file, fileName, imagePath);
+                
+                // Обновляем превью и URL
+                document.getElementById(previewId).src = imageUrl;
+                document.getElementById(urlInputId).value = imageUrl;
+                
+                showAwardsStatus('Изображение загружено', 'success');
+                
+            } catch (error) {
+                console.error('Ошибка загрузки изображения:', error);
+                showAwardsStatus(`Ошибка: ${error.message}`, 'error');
+            }
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function uploadImageToGitHub(file, fileName, imagePath) {
+            let token = CONFIG.GITHUB_TOKEN;
+            if (!token) {
+                token = prompt("Введите GitHub Token для загрузки изображения:");
+                if (!token) {
+                    throw new Error('Загрузка отменена');
+                }
+            }
+            
+            // Читаем файл как ArrayBuffer
+            const fileBuffer = await readFileAsArrayBuffer(file);
+            
+            // Кодируем в base64
+            const base64Content = arrayBufferToBase64(fileBuffer);
+            
+            const apiUrl = `https://api.github.com/repos/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/contents/${imagePath}`;
+            
+            // Проверяем, существует ли файл
+            let sha = null;
+            try {
+                const fileInfo = await fetch(apiUrl, {
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Accept": "application/vnd.github.v3+json"
+                    }
+                });
+                
+                if (fileInfo.ok) {
+                    const fileData = await fileInfo.json();
+                    sha = fileData.sha;
+                }
+            } catch (e) {
+                console.log("Файл не существует, будет создан новый");
+            }
+            
+            const response = await fetch(apiUrl, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Content-Type": "application/json",
+                    "Accept": "application/vnd.github.v3+json"
+                },
+                body: JSON.stringify({
+                    message: `Загрузка изображения для награды: ${fileName}`,
+                    content: base64Content,
+                    sha: sha
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Ошибка загрузки изображения');
+            }
+            
+            // Возвращаем URL изображения
+            return `https://raw.githubusercontent.com/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/main/${imagePath}`;
+        }
+
+        function readFileAsArrayBuffer(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        function arrayBufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            for (let i = 0; i < bytes.byteLength; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return btoa(binary);
+        }
+
+        async function saveAwards() {
+            const newAwardsData = {
+                mvp: {
+                    name: document.getElementById('mvpName').value.trim(),
+                    image: document.getElementById('mvpImageUrl').value.trim()
+                },
+                dpoy: {
+                    name: document.getElementById('dpoyName').value.trim(),
+                    image: document.getElementById('dpoyImageUrl').value.trim()
+                }
+            };
+            
+            let token = CONFIG.GITHUB_TOKEN;
+            if (!token) {
+                token = prompt("Введите GitHub Token для сохранения:");
+                if (!token) {
+                    showAwardsStatus("Сохранение отменено", "error");
+                    return;
+                }
+            }
+            
+            showAwardsStatus("Сохранение наград...", "info");
+            
+            try {
+                const apiUrl = `https://api.github.com/repos/${CONFIG.GITHUB_USER}/${CONFIG.REPO_NAME}/contents/${CONFIG.AWARDS_FILE_PATH}`;
+                
+                let sha = null;
+                try {
+                    const fileInfo = await fetch(apiUrl, {
+                        headers: {
+                            "Authorization": `token ${token}`,
+                            "Accept": "application/vnd.github.v3+json"
+                        }
+                    });
+                    
+                    if (fileInfo.ok) {
+                        const fileData = await fileInfo.json();
+                        sha = fileData.sha;
+                    }
+                } catch (e) {
+                    console.log("Файл наград не существует, будет создан новый");
+                }
+                
+                const response = await fetch(apiUrl, {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `token ${token}`,
+                        "Content-Type": "application/json",
+                        "Accept": "application/vnd.github.v3+json"
+                    },
+                    body: JSON.stringify({
+                        message: "Обновление наград",
+                        content: btoa(unescape(encodeURIComponent(JSON.stringify(newAwardsData, null, 2)))),
+                        sha: sha
+                    })
+                });
+                
+                if (!response.ok) throw new Error("Ошибка сохранения наград");
+                
+                awardsData = newAwardsData;
+                showAwardsStatus("Награды сохранены!", "success");
+                
+            } catch (error) {
+                console.error("Ошибка:", error);
+                showAwardsStatus(`Ошибка: ${error.message}`, "error");
+                CONFIG.GITHUB_TOKEN = "";
+            }
+        }
+
+        function showAwardsStatus(msg, type) {
+            const status = document.getElementById("awardsStatusMsg");
+            if (!status) return;
+            
+            status.textContent = msg;
+            status.className = `status-message ${type}`;
+            status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
         // ========== Utility Functions ========== //
         function getDefaultData() {
             return [
@@ -899,12 +1257,14 @@
         document.addEventListener("DOMContentLoaded", () => {
             loadData();
             loadNews();
+            loadAwards();
             
             // Table Event Listeners
             document.getElementById("saveBtn").addEventListener("click", saveData);
             document.getElementById("refreshBtn").addEventListener("click", () => {
                 loadData();
                 loadNews();
+                loadAwards();
             });
             
             // News Event Listeners
@@ -919,9 +1279,22 @@
                 const index = document.getElementById("newsSelect").value;
                 deleteNews(index);
             });
+            
+            // Настройка загрузки изображений для новостей
+            document.getElementById('newsImageFileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('newsImage').value = e.target.result;
+                    updateImagePreview();
+                };
+                reader.readAsDataURL(file);
+            });
         });
 
-        // Global functions for news actions
+        // Global functions
         window.editNews = editNews;
         window.deleteNews = deleteNews;
     </script>
