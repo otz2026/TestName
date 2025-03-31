@@ -527,118 +527,63 @@
     </footer>
 
 
-    <script>
-        // Конфигурация
-        const CONFIG = {
-            NEWS_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/news_data.json",
-            SCHEDULE_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/schedule_data.json",
-            CACHE_NAME: "otz-cache-v1",
-            OFFLINE_URL: "/otz2025/offline.html"
-        };
-    
-        // Основная функция инициализации
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                // Загружаем данные
-                await Promise.all([
-                    loadNews(),
-                    loadUpcomingMatches()
-                ]);
-                
-                // Инициализируем Service Worker
-                initServiceWorker();
-                
-                // Инициализируем другие функции
-                initScrollHeader();
-                initFooterEasterEgg();
-                initNetworkStatus();
-                initPWAInstall();
-                
-            } catch (error) {
-                console.error('Ошибка инициализации:', error);
-            }
-        });
-    
-        // ========== ФУНКЦИИ ДЛЯ НОВОСТЕЙ ========== //
-        async function loadNews() {
-            const newsContainer = document.getElementById('newsContainer');
-            if (!newsContainer) return;
+<script>
+    // Конфигурация
+    const CONFIG = {
+        NEWS_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/news_data.json",
+        SCHEDULE_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/schedule_data.json",
+        USE_CACHE: false // Отключаем кэш для разработки
+    };
+
+    // Основная функция инициализации
+    document.addEventListener('DOMContentLoaded', async () => {
+        try {
+            // Загружаем данные
+            await Promise.all([
+                loadNews(), // Оставляем без изменений
+                loadUpcomingMatches() // Обновленная функция
+            ]);
             
-            try {
-                newsContainer.innerHTML = '<div class="news-loading">Загрузка новостей...</div>';
-                
-                const response = await fetchWithCache(`${CONFIG.NEWS_DATA_URL}?t=${Date.now()}`);
-                
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const newsData = await response.json();
-                displayNews(newsData);
-                
-            } catch (error) {
-                console.error('Ошибка загрузки новостей:', error);
-                showError(newsContainer, 'Не удалось загрузить новости. Пожалуйста, попробуйте позже.');
-            }
+            // Инициализируем другие функции
+            initScrollHeader();
+            initFooterEasterEgg();
+            
+        } catch (error) {
+            console.error('Ошибка инициализации:', error);
         }
-    
-        function displayNews(newsData) {
-            const newsContainer = document.getElementById('newsContainer');
-            if (!newsContainer) return;
+    });
+
+    // ========== ФУНКЦИИ ДЛЯ РАСПИСАНИЯ (ОБНОВЛЕННЫЕ) ========== //
+    async function loadUpcomingMatches() {
+        const matchesContainer = document.getElementById('matchesContainer');
+        if (!matchesContainer) return;
+        
+        try {
+            matchesContainer.innerHTML = '<div class="match-loading">Загрузка ближайших матчей...</div>';
             
-            if (!newsData || newsData.length === 0) {
-                newsContainer.innerHTML = `
-                    <div class="news-empty">
-                        Новостей пока нет. Следите за обновлениями!
-                    </div>
-                `;
-                return;
-            }
-    
-            // Сортируем новости по дате (новые сначала) и берем 2 последние
-            const sortedNews = [...newsData]
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 2);
-    
-            newsContainer.innerHTML = sortedNews.map(news => `
-                <div class="news-item">
-                    <img src="${news.image || 'img/NEWS_NO.png'}" 
-                         alt="${news.title}" 
-                         onerror="this.src='img/NEWS_NO.png'">
-                    <div class="text">
-                        <h3>${news.title}</h3>
-                        <p>${news.content.length > 200 ? 
-                            news.content.substring(0, 200) + '...' : 
-                            news.content}</p>
-                        <a href="/TestName/news" class="read-more">Читать далее</a>
-                    </div>
-                </div>
-            `).join('');
+            const response = await fetch(`${CONFIG.SCHEDULE_DATA_URL}?t=${Date.now()}`);
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const scheduleData = await response.json();
+            console.log('Получены данные расписания:', scheduleData);
+            displayUpcomingMatches(scheduleData.schedule);
+            
+        } catch (error) {
+            console.error('Ошибка загрузки расписания:', error);
+            showError(matchesContainer, 'Не удалось загрузить расписание. Пожалуйста, попробуйте позже.');
         }
-    
-        // ========== ФУНКЦИИ ДЛЯ РАСПИСАНИЯ ========== //
-        async function loadUpcomingMatches() {
-            const matchesContainer = document.getElementById('matchesContainer');
-            if (!matchesContainer) return;
-            
-            try {
-                matchesContainer.innerHTML = '<div class="match-loading">Загрузка ближайших матчей...</div>';
-                
-                const response = await fetchWithCache(`${CONFIG.SCHEDULE_DATA_URL}?t=${Date.now()}`);
-                
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                
-                const scheduleData = await response.json();
-                displayUpcomingMatches(scheduleData.schedule);
-                
-            } catch (error) {
-                console.error('Ошибка загрузки расписания:', error);
-                showError(matchesContainer, 'Не удалось загрузить расписание. Пожалуйста, попробуйте позже.');
+    }
+
+    function parseCustomDate(dateStr) {
+        if (!dateStr) return null;
+        
+        try {
+            // Поддерживаем форматы: "1 июня 19:00" или "2023-06-01T19:00:00"
+            if (dateStr.includes('T')) {
+                return new Date(dateStr);
             }
-        }
-    
-        function parseCustomDate(dateStr) {
-            if (!dateStr) return null;
             
-            // Пример формата: "1 июня 19:00"
             const months = {
                 'января': 0, 'февраля': 1, 'марта': 2, 'апреля': 3,
                 'мая': 4, 'июня': 5, 'июля': 6, 'августа': 7,
@@ -646,234 +591,210 @@
             };
             
             const parts = dateStr.split(' ');
-            if (parts.length !== 3) return null;
-            
-            const day = parseInt(parts[0]);
-            const month = parts[1].toLowerCase();
-            const timeParts = parts[2].split(':');
-            
-            if (!months.hasOwnProperty(month) || timeParts.length !== 2) return null;
-            
-            const monthIndex = months[month];
-            const hours = parseInt(timeParts[0]);
-            const minutes = parseInt(timeParts[1]);
-            const year = new Date().getFullYear(); // Текущий год
-            
-            return new Date(year, monthIndex, day, hours, minutes);
-        }
-    
-        function displayUpcomingMatches(scheduleData) {
-            const matchesContainer = document.getElementById('matchesContainer');
-            if (!matchesContainer) return;
-            
-            try {
-                // Собираем все матчи из всех этапов
-                const allMatches = [
-                    ...(scheduleData.opening_night || []),
-                    ...(scheduleData.all_star || []),
-                    ...(scheduleData.after_all_star || [])
-                ];
-    
-                // Фильтруем и сортируем матчи
-                const now = new Date();
-                const upcomingMatches = allMatches
-                    .map(match => ({
-                        ...match,
-                        dateObj: parseCustomDate(match.date)
-                    }))
-                    .filter(match => match.dateObj && match.dateObj > now)
-                    .sort((a, b) => a.dateObj - b.dateObj)
-                    .slice(0, 2); // Берем 2 ближайших
-    
-                if (upcomingMatches.length === 0) {
-                    matchesContainer.innerHTML = `
-                        <div class="match-result">
-                            <div class="teams">
-                                <div class="team-logo">
-                                    <img src="img/PPATROL.png" alt="Paw patrol">
-                                    <div class="team-name">
-                                        <a href="/otz2025/teams/PawPatrol">Paw Patrol</a>
-                                    </div>
-                                </div>
-                                <div class="score">Нет запланированных матчей</div>
-                                <div class="team-logo">
-                                    <img src="img/RWE.png" alt="RWE">
-                                    <div class="team-name">
-                                        <a href="/otz2025/teams/RWE">RWE</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="date">Следите за обновлениями</div>
-                        </div>
-                    `;
-                    return;
+            if (parts.length === 3) {
+                const day = parseInt(parts[0]);
+                const month = parts[1].toLowerCase();
+                const timeParts = parts[2].split(':');
+                
+                if (months[month] !== undefined && timeParts.length === 2) {
+                    const hours = parseInt(timeParts[0]);
+                    const minutes = parseInt(timeParts[1]);
+                    const year = new Date().getFullYear();
+                    return new Date(year, months[month], day, hours, minutes);
                 }
-    
-                matchesContainer.innerHTML = upcomingMatches.map(match => `
+            }
+            
+            return null;
+            
+        } catch (e) {
+            console.error('Ошибка парсинга даты:', dateStr, e);
+            return null;
+        }
+    }
+
+    function displayUpcomingMatches(scheduleData) {
+        const matchesContainer = document.getElementById('matchesContainer');
+        if (!matchesContainer) return;
+        
+        try {
+            // Собираем все матчи из всех этапов
+            const allMatches = [
+                ...(scheduleData.opening_night || []),
+                ...(scheduleData.all_star || []),
+                ...(scheduleData.after_all_star || [])
+            ];
+
+            console.log('Все матчи:', allMatches);
+
+            // Фильтруем и сортируем матчи
+            const now = new Date();
+            const upcomingMatches = allMatches
+                .map(match => {
+                    const dateObj = parseCustomDate(match.date);
+                    console.log(`Матч: ${match.team1?.name || 'Team1'} vs ${match.team2?.name || 'Team2'}, Дата: ${match.date}, Parsed: ${dateObj}`);
+                    return {
+                        ...match,
+                        dateObj: dateObj
+                    };
+                })
+                .filter(match => {
+                    // Если есть счет, показываем матч (уже сыгранный)
+                    if (match.score) return true;
+                    // Если нет даты, показываем матч
+                    if (!match.dateObj) return true;
+                    // Иначе показываем только будущие матчи
+                    return match.dateObj > now;
+                })
+                .sort((a, b) => {
+                    // Сначала матчи без даты, потом завершенные, потом будущие по дате
+                    if (!a.dateObj) return -1;
+                    if (!b.dateObj) return 1;
+                    return a.dateObj - b.dateObj;
+                })
+                .slice(0, 2); // Берем 2 ближайших
+
+            console.log('Отображаемые матчи:', upcomingMatches);
+
+            if (upcomingMatches.length === 0) {
+                matchesContainer.innerHTML = `
                     <div class="match-result">
                         <div class="teams">
                             <div class="team-logo">
-                                <img src="${match.team1.logo || 'img/PPATROL.png'}" 
-                                     alt="${match.team1.name}"
-                                     onerror="this.src='img/PPATROL.png'">
+                                <img src="img/PPATROL.png" alt="Paw patrol">
                                 <div class="team-name">
-                                    <a href="${match.team1.link || '/otz2025/teams/PawPatrol'}">${match.team1.name}</a>
+                                    <a href="/otz2025/teams/PawPatrol">Paw Patrol</a>
                                 </div>
                             </div>
-                            <div class="score">${match.score || 'vs'}</div>
+                            <div class="score">Нет матчей</div>
                             <div class="team-logo">
-                                <img src="${match.team2.logo || 'img/RWE.png'}" 
-                                     alt="${match.team2.name}"
-                                     onerror="this.src='img/RWE.png'">
+                                <img src="img/RWE.png" alt="RWE">
                                 <div class="team-name">
-                                    <a href="${match.team2.link || '/otz2025/teams/RWE'}">${match.team2.name}</a>
+                                    <a href="/otz2025/teams/RWE">RWE</a>
                                 </div>
                             </div>
                         </div>
-                        <div class="date">${match.date}</div>
+                        <div class="date">Следите за обновлениями</div>
                     </div>
-                `).join('');
-                
-            } catch (error) {
-                console.error('Ошибка отображения матчей:', error);
-                showError(matchesContainer, 'Ошибка обработки данных расписания');
+                `;
+                return;
             }
+
+            matchesContainer.innerHTML = upcomingMatches.map(match => `
+                <div class="match-result">
+                    <div class="teams">
+                        <div class="team-logo">
+                            <img src="${match.team1?.logo || 'img/PPATROL.png'}" 
+                                 alt="${match.team1?.name || 'Team 1'}"
+                                 onerror="this.src='img/PPATROL.png'">
+                            <div class="team-name">
+                                <a href="${match.team1?.link || '/otz2025/teams/PawPatrol'}">${match.team1?.name || 'Team 1'}</a>
+                            </div>
+                        </div>
+                        <div class="score">${match.score || 'vs'}</div>
+                        <div class="team-logo">
+                            <img src="${match.team2?.logo || 'img/RWE.png'}" 
+                                 alt="${match.team2?.name || 'Team 2'}"
+                                 onerror="this.src='img/RWE.png'">
+                            <div class="team-name">
+                                <a href="${match.team2?.link || '/otz2025/teams/RWE'}">${match.team2?.name || 'Team 2'}</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="date">${match.date || 'Дата уточняется'}</div>
+                </div>
+            `).join('');
+            
+        } catch (error) {
+            console.error('Ошибка отображения матчей:', error);
+            showError(matchesContainer, 'Ошибка обработки данных расписания');
         }
-    
-        // ========== ОБЩИЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ========== //
-        async function fetchWithCache(url) {
-            try {
-                // Пробуем получить свежие данные
-                const response = await fetch(url);
-                if (response.ok) {
-                    // Кэшируем успешный ответ
-                    const cache = await caches.open(CONFIG.CACHE_NAME);
-                    await cache.put(url, response.clone());
-                    return response;
-                }
-                // Если сетевой запрос не удался, пробуем кэш
-                const cachedResponse = await caches.match(url);
-                return cachedResponse || response;
-            } catch (error) {
-                // Если всё провалилось, пробуем кэш
-                const cachedResponse = await caches.match(url);
-                if (cachedResponse) return cachedResponse;
-                throw error;
-            }
+    }
+
+    // ========== ФУНКЦИИ ДЛЯ НОВОСТЕЙ (БЕЗ ИЗМЕНЕНИЙ) ========== //
+    async function loadNews() {
+        const newsContainer = document.getElementById('newsContainer');
+        if (!newsContainer) return;
+        
+        try {
+            newsContainer.innerHTML = '<div class="news-loading">Загрузка новостей...</div>';
+            
+            const response = await fetch(`${CONFIG.NEWS_DATA_URL}?t=${Date.now()}`);
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            
+            const newsData = await response.json();
+            displayNews(newsData);
+            
+        } catch (error) {
+            console.error('Ошибка загрузки новостей:', error);
+            showError(newsContainer, 'Не удалось загрузить новости. Пожалуйста, попробуйте позже.');
         }
-    
-        function showError(container, message) {
-            if (!container) return;
-            container.innerHTML = `
-                <div class="error-message">
-                    ${message}
-                    <button onclick="location.reload()">Обновить</button>
+    }
+
+    function displayNews(newsData) {
+        const newsContainer = document.getElementById('newsContainer');
+        if (!newsContainer) return;
+        
+        if (!newsData || newsData.length === 0) {
+            newsContainer.innerHTML = `
+                <div class="news-empty">
+                    Новостей пока нет. Следите за обновлениями!
                 </div>
             `;
+            return;
         }
-    
-        // ========== PWA И SERVICE WORKER ========== //
-        function initServiceWorker() {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/otz2025/sw.js')
-                    .then(reg => {
-                        console.log('ServiceWorker зарегистрирован');
-                        // Автоматическое обновление каждые 24 часа
-                        setInterval(() => reg.update(), 86400000);
-                    })
-                    .catch(err => console.error('Ошибка регистрации ServiceWorker:', err));
-            }
-        }
-    
-        function initPWAInstall() {
-            let deferredPrompt;
-            
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                const installBtn = document.getElementById('install-btn');
-                if (installBtn) installBtn.style.display = 'block';
-            });
-    
-            const installBtn = document.getElementById('install-btn');
-            if (installBtn) {
-                installBtn.addEventListener('click', async () => {
-                    if (deferredPrompt) {
-                        deferredPrompt.prompt();
-                        const { outcome } = await deferredPrompt.userChoice;
-                        if (outcome === 'accepted') {
-                            console.log('PWA установлен');
-                        }
-                        deferredPrompt = null;
-                        installBtn.style.display = 'none';
-                    }
-                });
-            }
-        }
-    
-        // ========== ДРУГИЕ ФУНКЦИИ ========== //
-        function initScrollHeader() {
-            const header = document.getElementById('header');
-            if (header) {
-                window.addEventListener('scroll', () => {
-                    header.classList.toggle('scrolled', window.scrollY > 50);
-                });
-            }
-        }
-    
-        function initNetworkStatus() {
-            const offlineAlert = document.getElementById('offline-alert');
-            if (offlineAlert) {
-                const updateStatus = () => {
-                    offlineAlert.style.display = navigator.onLine ? 'none' : 'block';
-                };
-                window.addEventListener('online', updateStatus);
-                window.addEventListener('offline', updateStatus);
-                updateStatus();
-            }
-        }
-    
-        function initFooterEasterEgg() {
-            const footerText = document.querySelector('footer p');
-            const hiddenLink = document.querySelector('footer .hidden');
-            
-            if (footerText && hiddenLink) {
-                footerText.addEventListener('click', () => {
-                    hiddenLink.classList.remove('hidden');
-                    setTimeout(() => hiddenLink.classList.add('hidden'), 2000);
-                });
-            }
-        }
-    
-        // Добавляем стили для состояний загрузки
-        const style = document.createElement('style');
-        style.textContent = `
-            .news-loading, .news-error, .news-empty,
-            .match-loading, .match-error {
-                text-align: center;
-                padding: 40px;
-                font-size: 18px;
-                color: #ccc;
-                width: 100%;
-            }
-            .error-message {
-                text-align: center;
-                padding: 20px;
-                background: rgba(255, 0, 0, 0.1);
-                border-radius: 8px;
-                margin: 10px 0;
-            }
-            .error-message button {
-                margin-top: 10px;
-                padding: 8px 16px;
-                background: #dd4710;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-            }
+
+        const sortedNews = [...newsData]
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .slice(0, 2);
+
+        newsContainer.innerHTML = sortedNews.map(news => `
+            <div class="news-item">
+                <img src="${news.image || 'img/NEWS_NO.png'}" 
+                     alt="${news.title}" 
+                     onerror="this.src='img/NEWS_NO.png'">
+                <div class="text">
+                    <h3>${news.title}</h3>
+                    <p>${news.content.length > 200 ? 
+                        news.content.substring(0, 200) + '...' : 
+                        news.content}</p>
+                    <a href="/TestName/news" class="read-more">Читать далее</a>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // ========== ОБЩИЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ========== //
+    function showError(container, message) {
+        if (!container) return;
+        container.innerHTML = `
+            <div class="error-message">
+                ${message}
+                <button onclick="location.reload()">Обновить</button>
+            </div>
         `;
-        document.head.appendChild(style);
-    </script>
+    }
+
+    function initScrollHeader() {
+        const header = document.getElementById('header');
+        if (header) {
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('scrolled', window.scrollY > 50);
+            });
+        }
+    }
+
+    function initFooterEasterEgg() {
+        const footerText = document.querySelector('footer p');
+        const hiddenLink = document.querySelector('footer .hidden');
+        
+        if (footerText && hiddenLink) {
+            footerText.addEventListener('click', () => {
+                hiddenLink.classList.remove('hidden');
+                setTimeout(() => hiddenLink.classList.add('hidden'), 2000);
+            });
+        }
+    }
+</script>
 </body>
 </html>
