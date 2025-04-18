@@ -1,0 +1,75 @@
+Вот структура моего сайта:
+otz2025/
+├── index.html
+├── еще какие то файлы.. 
+├── img 
+│   └── фотки(разные)
+│   └── teams
+│   	└── фотки игроков (по номерам)
+├── news
+│   └── index.html
+├── reward
+│   └── index.html
+├── schedule
+│   └── index.html
+├── table
+│   └── index.html
+├── teams
+│   └── Bulldogs
+│   	└── index.html
+│   └── KittyBoys
+│   	└── index.html
+│   └── PawPatrol
+│   	└── index.html
+│   └── RWE
+│   	└── index.html
+│   └── TN
+│   	└── index.html
+└── SSTimeSS
+    └── index.html
+    └── еще какие то файлы.. 
+    └── players
+   	└── index.html
+    └── schedule
+   	└── index.html
+
+Теперь вот ссылки на них:
+
+otz2025/    //https://drive.google.com/drive/folders/1LJhr_rEz6YlvEX5OWG8B6H-NwzAszGga?usp=sharing//
+├── index.html
+├── еще какие то файлы.. 
+├── img  //https://drive.google.com/drive/folders/1fOZ5Kwcf9XDOTBPtam402ZFL7qlsbb1U?usp=sharing//
+│   └── фотки(разные)
+│   └── teams  //https://drive.google.com/drive/folders/1yBRgZWe-fWGiMZByo-ECfOdGWJns-Bdl?usp=sharing//
+│   	└── фотки игроков (по номерам)
+├── news  //https://drive.google.com/drive/folders/13ANdNskojgDdbSkEOp5wYrgby88W1pvH?usp=sharing//
+│   └── index.html
+├── reward  //https://drive.google.com/drive/folders/1h_iSAq8hmpbldyyOxv0j3IuQtdefcRMo?usp=sharing//
+│   └── index.html
+├── schedule  //https://drive.google.com/drive/folders/1cZxU3y45FqxcPv63P9RG6VC1rjZC9JMp?usp=sharing//
+│   └── index.html
+├── table  //https://drive.google.com/drive/folders/1cZxU3y45FqxcPv63P9RG6VC1rjZC9JMp?usp=sharing//
+│   └── index.html
+├── teams  //https://drive.google.com/drive/folders/1MWIrTpEb2k-O9TnXa9k6er-IZcgmwMA6?usp=sharing//
+│   └── Bulldogs  //https://drive.google.com/drive/folders/16XhHs6qTiR4nbLuptkPoxT5T6VCguyh7?usp=sharing//
+│   │	└── index.html
+│   └── KittyBoys  //https://drive.google.com/drive/folders/14XZJGk-qMVKTRfuZEPqCHQCrhUZdwYP1?usp=sharing//
+│   │	└── index.html
+│   └── PawPatrol  //https://drive.google.com/drive/folders/1JNEZyHaMRI1g2a_3UMwKW-1LCsHCjgmi?usp=sharing//
+│   │	└── index.html
+│   └── RWE  //https://drive.google.com/drive/folders/16oUaeSvj5zcLXf51xO8OSp_FoC2W73tl?usp=sharing//
+│   │	└── index.html
+│   └── TN  //https://drive.google.com/drive/folders/1XQity9sRm8NOm-deQHXn_B7nyMPTkkdu?usp=sharing//
+│   	└── index.html
+└── SSTimeSS  //https://drive.google.com/drive/folders/1ugMFj-uyymPEscxuQsCRBrwzWyvyWFte?usp=sharing//
+    └── index.html
+    └── еще какие то файлы.. 
+    └── players  //https://drive.google.com/drive/folders/1YfYT_CaApUZm2njER-j1uwF5nrDGP1m1?usp=sharing//
+    │	└── index.html
+    └── schedule  //https://drive.google.com/drive/folders/1OaO6SCE3yoOqdLpWQpWHKPNAwM56SIiT?usp=sharing//
+   	└── index.html
+Вот! Есди ты смог теперь посмотреть каждый файл и составить у себя в уме правильную структуру сайта то напиши!
+
+
+
+
