@@ -12,7 +12,7 @@
 
     <!-- PWA Configuration -->
     <link rel="manifest" href="/otz2025/manifest.json">
-    <meta name="theme-color" content="#000000">
+    <meta name="theme-color" content="#111827">
     <meta name="mobile-web-app-capable" content="yes">
     
     <!-- iOS Specific -->
@@ -25,7 +25,7 @@
     <!-- Иконки -->
     <link rel="icon" href="/otz2025/img/icon-192x192.png">
     
-    <!-- Open Graph метатеги для соцсетей и поисковиков -->
+    <!-- Open Graph метатеги -->
     <meta property="og:title" content="Over Time Zvenigorod - Баскетбольная лига">
     <meta property="og:image" content="https://otz2026.github.io/otz2025/img/OTZ3.png">
     <meta property="og:url" content="https://otz2026.github.io/otz2025/">
@@ -43,536 +43,270 @@
     <!-- Каноническая ссылка -->
     <link rel="canonical" href="https://otz2026.github.io/otz2025/">
 
-    <!-- Подтверждение для Google Search Console -->
+    <!-- Подтверждение для Google и Яндекс -->
     <meta name="google-site-verification" content="8HjvCESaYUgIvvERAwoEaYd3x6xdpR_ccWMwwkwgoA4" />
-
-    <!-- Подтверждение для Яндекс.Вебмастер -->
     <meta name="yandex-verification" content="143713e69ae2928c" />
 
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Общие стили */
+        /* Переопределение Tailwind */
         body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #2a2a2a;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            position: relative;
         }
 
-        /* Фиксированное меню */
-        header {
+        /* Неоновые линии для тёмной темы */
+        body:not(.light)::before {
+            content: '';
             position: fixed;
             top: 0;
+            left: 0;
             width: 100%;
-            background-color: rgba(0, 0, 0, 1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px 20px;
-            z-index: 1000;
-            transition: background-color 0.3s ease;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                transparent 0%,
+                rgba(16, 185, 129, 0.2) 50%,
+                transparent 100%
+            ),
+            linear-gradient(
+                -45deg,
+                transparent 0%,
+                rgba(16, 185, 129, 0.2) 50%,
+                transparent 100%
+            );
+            z-index: -1;
+            animation: neonGlow 5s infinite alternate;
+            opacity: 0.3;
         }
 
-        header.scrolled {
-            background-color: rgba(0, 0, 0, 0.7);
+        @keyframes neonGlow {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.5; }
         }
 
-        header .logo {
-            position: absolute;
-            left: 20px;
-            font-size: 24px;
-            font-weight: bold;
-            color: white;
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        header nav {
-            display: flex;
-            gap: 20px;
+        .animate-fadeIn {
+            animation: fadeIn 0.8s ease-out forwards;
         }
 
-        header nav a {
-            color: white;
-            text-decoration: none;
-            font-size: 18px;
-            transition: color 0.3s ease;
+        /* Плавный переход для темы */
+        body, header, footer, .hero, .content, .match-result, .news-item {
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
 
-        header nav a:hover {
-            color: #ccc;
-        }
-
-        /* Hero-секция */
-        .hero {
-            height: 540px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: url('img/OTZ.png');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            margin-top: 60px;
-            position: relative;
-        }
-
-        /* Заголовок перед картинкой (только для десктопов) */
-        .hero h1 {
-            position: absolute;
-            top: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 48px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        /* Стили для гамбургер-меню */
+        .hamburger {
             display: none;
-        }
-
-        /* Основной контент - УВЕЛИЧЕННЫЕ РАЗМЕРЫ ДЛЯ КОМПЬЮТЕРОВ */
-        .content {
-            padding: 30px;
-            max-width: 1400px; /* Увеличено с 1200px */
-            margin: 0 auto;
-            flex: 1;
-            box-sizing: border-box;
-            text-align: left;
-            padding-bottom: 80px; /* Увеличено */
-        }
-
-        .content h2 {
-            font-size: 28px; /* Увеличено */
-            margin-bottom: 25px; /* Увеличено */
-            text-align: left;
-            padding: 15px 0; /* Увеличено */
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        /* Блок с матчами - УВЕЛИЧЕННЫЕ РАЗМЕРЫ */
-        .match-results {
-            display: flex;
             flex-direction: column;
-            gap: 30px; /* Увеличено */
-            margin-top: 30px; /* Увеличено */
+            cursor: pointer;
+            z-index: 20;
         }
 
-        .match-result {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 25px; /* Увеличено */
-            border-radius: 12px; /* Увеличено */
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .hamburger span {
+            width: 25px;
+            height: 3px;
+            background-color: #ffffff;
+            margin: 2px 0;
+            transition: all 0.3s ease;
         }
 
-        .teams {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
         }
 
-        .team-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
         }
 
-        .team-name a {
-            color: white;
-            text-decoration: none;
-            font-size: 20px; /* Увеличено */
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
         }
 
-        .team-logo img {
-            width: 70px; /* Увеличено */
-            height: 70px; /* Увеличено */
-        }
-
-        .score {
-            font-size: 28px; /* Увеличено */
-            font-weight: bold;
-            margin: 0 30px; /* Увеличено */
-            flex: 1;
-            text-align: center;
-        }
-
-        .date {
-            font-size: 20px; /* Увеличено */
-            color: #ccc;
-            margin-top: 15px; /* Увеличено */
-            text-align: center;
-        }
-
-        /* Новости - УВЕЛИЧЕННЫЕ РАЗМЕРЫ */
-        .news {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 50px; /* Увеличено */
-            margin-top: 80px; /* Увеличено */
-            margin-bottom: 60px; /* Увеличено */
-            justify-content: center;
-        }
-
-        .news-item {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 25px; /* Увеличено */
-            border-radius: 12px; /* Увеличено */
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            width: calc(50% - 25px); /* Увеличено */
-            box-sizing: border-box;
-            position: relative;
-            margin-bottom: 30px; /* Увеличено */
-        }
-
-        .news-item img {
-            width: 100%;
-            height: 250px; /* Увеличено */
-            border-radius: 12px; /* Увеличено */
-            border: 2px solid white;
-            object-fit: cover;
-            margin-top: -50px; /* Увеличено */
-            margin-bottom: 25px; /* Увеличено */
-        }
-
-        .news-item .text h3 {
-            font-size: 24px; /* Увеличено */
-            margin-bottom: 15px; /* Увеличено */
-        }
-
-        .news-item .text p {
-            font-size: 18px; /* Увеличено */
-            line-height: 1.6;
-            margin-bottom: 20px; /* Увеличено */
-        }
-
-        .read-more {
-            color: #dd4710;
-            text-decoration: none;
-            font-size: 20px; /* Увеличено */
-            transition: color 0.3s ease;
-            display: inline-block;
-            margin-top: 15px; /* Увеличено */
-        }
-
-        .read-more:hover {
-            color: #ff6b3b;
-        }
-
-        .schedule-link {
-            margin-top: 30px; /* Увеличено */
-            margin-bottom: 30px; /* Увеличено */
-            text-align: center;
-        }
-
-        .schedule-link a {
-            color: #dd4710;
-            text-decoration: none;
-            font-size: 20px; /* Увеличено */
-            transition: color 0.3s ease;
-        }
-
-        .schedule-link a:hover {
-            color: #ff6b3b;
-        }
-
-        /* Футер */
-        footer {
-            background-color: #000;
-            padding: 50px 20px; /* Увеличено */
-            margin-top: auto;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .footer-content {
-            max-width: 1400px; /* Увеличено */
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 25px; /* Увеличено */
-            text-align: center;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 25px; /* Увеличено */
-            align-items: center;
-        }
-
-        .social-links a {
-            color: white;
-            text-decoration: none;
-            transition: transform 0.3s ease, opacity 0.3s ease;
-        }
-
-        .social-links a:hover {
-            transform: scale(1.1);
-            opacity: 0.8;
-        }
-
-        .social-links img {
-            width: 30px; /* Увеличено */
-            height: 30px; /* Увеличено */
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        /* Адаптация для мобильных - ОСТАВЛЕНО БЕЗ ИЗМЕНЕНИЙ */
+        /* Мобильное меню */
         @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                padding: 10px;
-            }
-
-            header .logo {
-                position: static;
-                margin-bottom: 10px;
-                text-align: center;
-            }
-
-            header nav {
+            .hamburger {
                 display: flex;
-                flex-direction: row;
-                justify-content: center;
-                gap: 10px;
-                flex-wrap: wrap;
+                position: absolute;
+                left: 16px;
+                top: 16px;
             }
 
-            .hero {
-                height: 300px;
-                background-size: contain;
+            .logo {
+                margin-left: 48px;
+                text-align: center;
+                flex-grow: 1;
             }
 
-            .news-item {
+            nav {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 60px;
+                left: 0;
                 width: 100%;
+                background-color: #111827;
+                padding: 20px;
+                z-index: 10;
             }
 
-            .social-links {
-                flex-direction: row;
-                gap: 20px;
+            nav.active {
+                display: flex;
             }
-            
-            /* Возвращаем оригинальные размеры для мобильных */
-            .content {
-                padding: 20px;
-                max-width: 1200px;
-                padding-bottom: 60px;
+
+            nav a {
+                margin: 10px 0;
+                font-size: 1.5rem;
             }
-            
-            .content h2 {
-                font-size: 24px;
-                margin-bottom: 20px;
-                padding: 10px 0;
-            }
-            
-            .match-results {
-                gap: 20px;
-                margin-top: 20px;
-            }
-            
-            .match-result {
-                padding: 20px;
-                border-radius: 10px;
-            }
-            
-            .team-name a {
-                font-size: inherit;
-            }
-            
-            .team-logo img {
-                width: 50px;
-                height: 50px;
-            }
-            
-            .score {
-                font-size: 24px;
-                margin: 0 20px;
-            }
-            
-            .date {
-                font-size: 18px;
-                margin-top: 10px;
-            }
-            
-            .news {
-                gap: 40px;
-                margin-top: 60px;
-                margin-bottom: 40px;
-            }
-            
-            .news-item {
-                padding: 20px;
-                margin-bottom: 20px;
-                border-radius: 10px;
-            }
-            
-            .news-item img {
-                height: 200px;
-                margin-top: -40px;
-                margin-bottom: 20px;
-                border-radius: 10px;
-            }
-            
-            .news-item .text h3 {
-                font-size: inherit;
-                margin-bottom: inherit;
-            }
-            
-            .news-item .text p {
-                font-size: inherit;
-                margin-bottom: inherit;
-            }
-            
-            .read-more {
-                font-size: 18px;
-                margin-top: 10px;
-            }
-            
-            .schedule-link {
-                margin-top: 20px;
-                margin-bottom: 20px;
-            }
-            
-            .schedule-link a {
-                font-size: 18px;
-            }
-            
-            footer {
-                padding: 40px 20px;
-            }
-            
-            .footer-content {
-                max-width: 1200px;
-                gap: 20px;
-            }
-            
-            .social-links {
-                gap: 20px;
-            }
-            
-            .social-links img {
-                width: 24px;
-                height: 24px;
+
+            #theme-toggle {
+                right: 16px;
+                top: 16px;
             }
         }
 
-        .match-loading, .match-error {
-            text-align: center;
-            padding: 40px;
-            font-size: 18px;
-            color: #ccc;
+        /* Ховер-эффекты */
+        .hover-scale:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+
+        /* Кастомный градиент для hero */
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(17, 24, 39, 0.7), rgba(0, 0, 0, 0.9));
+            z-index: 1;
         }
-        
+
+        .hero h1 {
+            z-index: 2;
+        }
+
+        /* Стили для иконки темы */
+        #theme-toggle svg {
+            width: 24px;
+            height: 24px;
+            transition: fill 0.3s ease, transform 0.3s ease;
+        }
+
+        #theme-toggle:hover svg {
+            transform: rotate(15deg) scale(1.1);
+        }
     </style>
 </head>
-<body>
-    <header id="header">
-        <div class="logo">OVER TIME ZWENIGOROD</div>
-        <nav>
-            <a href="/TestName/">Главная</a>
-            <a href="/TestName/news">Новости</a>
-            <a href="/TestName/table">Соревнования</a>
-            <a href="/TestName/reward">Награды</a>
-            <!--<a href="/OverTimeZwenigorod/teams">Команды</a>-->
-        </nav>
+<body class="bg-[#111827] text-[#ffffff] light:bg-[#fef3c7] light:text-[#111827] min-h-screen flex flex-col transition-all duration-500">
+    <header id="header" class="fixed top-0 w-full bg-[#111827] light:bg-[#fefce8] z-10 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="hamburger md:hidden" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="logo text-2xl font-bold">OVER TIME ZVENIGOROD</div>
+            <nav class="flex gap-6 md:flex hidden" id="nav">
+                <a href="/otz2025/" class="hover:text-[#10b981] light:hover:text-[#d97706] transition-colors">Главная</a>
+                <a href="/otz2025/news" class="hover:text-[#10b981] light:hover:text-[#d97706] transition-colors">Новости</a>
+                <a href="/otz2025/table" class="hover:text-[#10b981] light:hover:text-[#d97706] transition-colors">Соревнования</a>
+                <a href="/otz2025/reward" class="hover:text-[#10b981] light:hover:text-[#d97706] transition-colors">Награды</a>
+            </nav>
+            <button id="theme-toggle" class="absolute right-4 top-4" aria-label="Переключить тему">
+                <svg id="theme-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#10b981">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 2h2v8h-2V8zm-4 4h8v2H7v-2z"/>
+                </svg>
+            </button>
+        </div>
     </header>
 
-    <div class="hero">
-        <h1>OVER TIME ZWENIGOROD</h1>
+    <div class="hero relative h-[500px] flex items-center justify-center bg-cover bg-center mt-16 animate-fadeIn" id="hero">
+        <h1 class="text-5xl font-bold text-white md:block hidden">OVER TIME ZVENIGOROD</h1>
     </div>
 
-    <div class="content">
-        <!-- Заголовок "События" -->
-        <h2>События</h2>
-        <div class="match-results" id="matchesContainer">
-            <!-- Блок для отображения загрузки -->
-            <div class="match-loading">Загрузка ближайших матчей...</div>
+    <div class="content max-w-7xl mx-auto px-6 py-10 flex-1">
+        <h2 class="text-3xl font-semibold mb-8 border-b border-[#10b981] light:border-[#b91c1c] pb-4 animate-fadeIn text-[#ffffff] light:text-[#b91c1c]">События</h2>
+        <div class="match-results flex flex-col gap-6" id="matchesContainer">
+            <div class="match-loading text-center text-gray-400 light:text-gray-600 text-xl py-10">Загрузка ближайших матчей...</div>
         </div>
-    
-        <!-- Ссылка на расписание -->
-        <div class="schedule-link">
-            <a href="/TestName/schedule">Посмотреть полное расписание</a>
+        <div class="schedule-link text-center my-8">
+            <a href="/otz2025/schedule" class="text-[#10b981] light:text-[#d97706] text-xl hover:text-[#34d399] light:hover:text-[#b45309] transition-colors hover-scale">Посмотреть полное расписание</a>
         </div>
 
-
-        <!-- Заголовок "Новости" -->
-        <h2>Новости</h2>
-        <div class="news" id="newsContainer">
-            <!-- Новости будут загружаться здесь динамически -->
-            <div class="news-loading">Загрузка новостей...</div>
+        <h2 class="text-3xl font-semibold mb-8 border-b border-[#10b981] light:border-[#b91c1c] pb-4 animate-fadeIn text-[#ffffff] light:text-[#b91c1c]">Новости</h2>
+        <div class="news grid grid-cols-1 md:grid-cols-2 gap-8" id="newsContainer">
+            <div class="news-loading text-center text-gray-400 light:text-gray-600 text-xl py-10">Загрузка новостей...</div>
         </div>
     </div>
 
-    <footer>
-        <div class="footer-content">
-            <!-- Логотипы TikTok и изображение сайта -->
-            <div class="social-links">
-                <a href="https://www.tiktok.com/@otz.summer.league?_t=ZS-8uNhlZxvA0N&_r=1" target="_blank">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="white">
+    <footer class="bg-[#111827] light:bg-[#fefce8] py-8 w-full">
+        <div class="footer-content max-w-7xl mx-auto px-6 flex flex-col items-center gap-4 text-center">
+            <div class="social-links flex gap-6">
+                <a href="https://www.tiktok.com/@otz.summer.league?_t=ZS-8uNhlZxvA0N&_r=1" target="_blank" class="hover-scale">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M19.589 6.686a4.793 4.793 0 0 1-3.77-4.245V2h-3.445v13.672a2.896 2.896 0 0 1-5.201 1.743l-.002-.001.002.001a2.895 2.895 0 0 1 3.183-4.51v-3.5a6.329 6.329 0 0 0-5.394 10.692 6.33 6.33 0 0 0 10.857-4.424V8.687a8.182 8.182 0 0 0 4.773 1.526V6.79a4.831 4.831 0 0 1-1.003-.104z"/>
                     </svg>
                 </a>
-                <a href="https://t.me/pisunapidora" target="_blank">
-                    <img src="/otz2025/img/TG.png" alt="Логотип сайта">
+                <a href="https://t.me/pisunapidora" target="_blank" class="hover-scale">
+                    <img src="/otz2025/img/TG.png" alt="Логотип Telegram" class="w-8 h-8">
                 </a>
             </div>
-
-            <p>© 2025 Over Time Zvenigorod. Все права защищены. <a href="https://t.me/voho_dranik" style="color: white; text-decoration: none;" class="hidden">Абоюдно.</a></p>
+            <p>© 2025 Over Time Zvenigorod. Все права защищены. <a href="https://t.me/voho_dranik" class="hidden text-[#ffffff] light:text-[#111827]" id="easter-egg">Абоюдно.</a></p>
         </div>
     </footer>
-
 
     <script>
         // Конфигурация
         const CONFIG = {
-            NEWS_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/news_data.json",
-            SCHEDULE_DATA_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/schedule_data.json",
-            FEATURED_MATCHES_URL: "https://raw.githubusercontent.com/otz2026/TestName/main/SSTimeSS/featured_matches.json",
+            NEWS_DATA_URL: "https://raw.githubusercontent.com/otz2026/otz2025/main/SSTimeSS/news_data.json",
+            SCHEDULE_DATA_URL: "https://raw.githubusercontent.com/otz2026/otz2025/main/SSTimeSS/schedule_data.json",
+            FEATURED_MATCHES_URL: "https://raw.githubusercontent.com/otz2026/otz2025/main/SSTimeSS/featured_matches.json",
             USE_CACHE: false
         };
-    
-        // Основная функция инициализации
+
+        // Инициализация
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                // Загружаем данные
                 await Promise.all([
                     loadNews(),
                     loadFeaturedMatches()
                 ]);
-                
-                // Инициализируем другие функции
                 initScrollHeader();
                 initFooterEasterEgg();
-                
+                initThemeToggle();
+                initHamburgerMenu();
+                updateHeroImage();
             } catch (error) {
                 console.error('Ошибка инициализации:', error);
             }
         });
-    
-        // ========== ФУНКЦИИ ДЛЯ ОТОБРАЖЕНИЯ ВЫБРАННЫХ МАТЧЕЙ ========== //
+
+        // Функции для матчей
         async function loadFeaturedMatches() {
             const matchesContainer = document.getElementById('matchesContainer');
             if (!matchesContainer) return;
             
             try {
-                matchesContainer.innerHTML = '<div class="match-loading">Загрузка матчей...</div>';
+                matchesContainer.innerHTML = '<div class="match-loading text-center text-gray-400 light:text-gray-600 text-xl py-10">Загрузка матчей...</div>';
                 
-                // Загружаем список выбранных матчей
                 const featuredResponse = await fetch(`${CONFIG.FEATURED_MATCHES_URL}?t=${Date.now()}`);
                 if (!featuredResponse.ok) throw new Error(`Ошибка загрузки featured_matches: ${featuredResponse.status}`);
                 const featuredData = await featuredResponse.json();
                 
-                // Загружаем полное расписание
                 const scheduleResponse = await fetch(`${CONFIG.SCHEDULE_DATA_URL}?t=${Date.now()}`);
                 if (!scheduleResponse.ok) throw new Error(`Ошибка загрузки расписания: ${scheduleResponse.status}`);
                 const scheduleData = await scheduleResponse.json();
                 
-                // Отображаем выбранные матчи
                 displayFeaturedMatches(featuredData.featured, scheduleData.schedule);
                 
             } catch (error) {
@@ -580,95 +314,98 @@
                 showError(matchesContainer, 'Не удалось загрузить матчи. Пожалуйста, попробуйте позже.');
             }
         }
-    
+
         function displayFeaturedMatches(featuredMatches, scheduleData) {
             const matchesContainer = document.getElementById('matchesContainer');
             if (!matchesContainer) return;
             
             try {
-                // Если нет выбранных матчей, показываем сообщение
                 if (!featuredMatches || featuredMatches.length === 0) {
                     matchesContainer.innerHTML = `
-                        <div class="match-result">
-                            <div class="teams">
-                                <div class="team-logo">
-                                    <img src="img/PPATROL.png" alt="Paw patrol">
+                        <div class="match-result bg-[#1f2937] light:bg-[#ffffff] p-6 rounded-xl shadow-lg hover-scale animate-fadeIn border border-transparent light:border-[#d97706]">
+                            <div class="teams flex justify-between items-center">
+                                <div class="team-logo flex flex-col items-center">
+                                    <img src="img/PPATROL.png" alt="Paw Patrol" class="w-16 h-16 rounded-full">
                                     <div class="team-name">
-                                        <a href="/otz2025/teams/PawPatrol">Paw Patrol</a>
+                                        <a href="/otz2025/teams/PawPatrol" class="text-[#ffffff] light:text-[#111827] hover:text-[#10b981] light:hover:text-[#b91c1c]">Paw Patrol</a>
                                     </div>
                                 </div>
-                                <div class="score">Не начался</div>
-                                <div class="team-logo">
-                                    <img src="img/RWE.png" alt="RWE">
+                                <div class="score text-2xl font-bold">Не начался</div>
+                                <div class="team-logo flex flex-col items-center">
+                                    <img src="img/RWE.png" alt="RWE" class="w-16 h-16 rounded-full">
                                     <div class="team-name">
-                                        <a href="/otz2025/teams/RWE">RWE</a>
+                                        <a href="/otz2025/teams/RWE" class="text-[#ffffff] light:text-[#111827] hover:text-[#10b981] light:hover:text-[#b91c1c]">RWE</a>
                                     </div>
                                 </div>
                             </div>
-                            <div class="date">Следите за обновлениями</div>
+                            <div class="date text-gray-400 light:text-gray-600 text-lg mt-4 text-center">Следите за обновлениями</div>
                         </div>
                     `;
                     return;
                 }
-    
-                // Находим матчи по их ID
+
                 const matchesToShow = [];
-                
                 featuredMatches.forEach(matchId => {
                     const [stage, index] = matchId.split('|');
                     if (scheduleData[stage] && scheduleData[stage][index]) {
                         matchesToShow.push(scheduleData[stage][index]);
                     }
                 });
-    
-                // Если не нашли ни одного матча
+
                 if (matchesToShow.length === 0) {
                     matchesContainer.innerHTML = `
-                        <div class="match-result">
-                            <div class="teams">
-                                <div class="team-logo">
-                                    <img src="img/PPATROL.png" alt="Paw patrol">
+                        <div class="match-result bg-[#1f2937] light:bg-[#ffffff] p-6 rounded-xl shadow-lg hover-scale animate-fadeIn border border-transparent light:border-[#d97706]">
+                            <div class="teams flex justify-between items-center">
+                                <div class="team-logo flex flex-col items-center">
+                                    <img src="img/PPATROL.png" alt="Paw Patrol" class="w-16 h-16 rounded-full">
                                     <div class="team-name">
-                                        <a href="/otz2025/teams/PawPatrol">Paw Patrol</a>
+                                        <a href="/otz2025/teams/PawPatrol" class="text-[#ffffff] light:text-[#111827] hover:text-[#10b981] light:hover:text-[#b91c1c]">Paw Patrol</a>
                                     </div>
                                 </div>
-                                <div class="score">Не начался</div>
-                                <div class="team-logo">
-                                    <img src="img/RWE.png" alt="RWE">
+                                <div class="score text-2xl font-bold">Не начался</div>
+                                <div class="team-logo flex flex-col items-center">
+                                    <img src="img/RWE.png" alt="RWE" class="w-16 h-16 rounded-full">
                                     <div class="team-name">
-                                        <a href="/otz2025/teams/RWE">RWE</a>
+                                        <a href="/otz2025/teams/RWE" class="text-[#ffffff] light:text-[#111827] hover:text-[#10b981] light:hover:text-[#b91c1c]">RWE</a>
                                     </div>
                                 </div>
                             </div>
-                            <div class="date">Следите за обновлениями</div>
+                            <div class="date text-gray-400 light:text-gray-600 text-lg mt-4 text-center">Следите за обновлениями</div>
                         </div>
                     `;
                     return;
                 }
-    
-                // Отображаем найденные матчи (максимум 2)
+
                 matchesContainer.innerHTML = matchesToShow.slice(0, 2).map(match => `
-                    <div class="match-result">
-                        <div class="teams">
-                            <div class="team-logo">
+                    <div class="match-result bg-[#1f2937] light:bg-[#ffffff] p-6 rounded-xl shadow-lg hover-scale animate-fadeIn border border-transparent light:border-[#d97706]">
+                        <div class="teams flex justify-between items-center">
+                            <div class="team-logo flex flex-col items-center">
                                 <img src="${match.team1?.logo || 'img/PPATROL.png'}" 
-                                     alt="${match.team1?.name || 'Team 1'}"
+                                     alt="${match.team1?.name || 'Team 1'}" 
+                                     class="w-16 h-16 rounded-full"
                                      onerror="this.src='img/PPATROL.png'">
                                 <div class="team-name">
-                                    <a href="${match.team1?.link || '/otz2025/teams/PawPatrol'}">${match.team1?.name || 'Team 1'}</a>
+                                    <a href="${match.team1?.link || '/otz2025/teams/PawPatrol'}" 
+                                       class="text-[#ffffff] light:text-[#111827] hover:text-[#10b981] light:hover:text-[#b91c1c]">
+                                       ${match.team1?.name || 'Team 1'}
+                                    </a>
                                 </div>
                             </div>
-                            <div class="score">${match.score || 'vs'}</div>
-                            <div class="team-logo">
+                            <div class="score text-2xl font-bold">${match.score || 'vs'}</div>
+                            <div class="team-logo flex flex-col items-center">
                                 <img src="${match.team2?.logo || 'img/RWE.png'}" 
-                                     alt="${match.team2?.name || 'Team 2'}"
+                                     alt="${match.team2?.name || 'Team 2'}" 
+                                     class="w-16 h-16 rounded-full"
                                      onerror="this.src='img/RWE.png'">
                                 <div class="team-name">
-                                    <a href="${match.team2?.link || '/otz2025/teams/RWE'}">${match.team2?.name || 'Team 2'}</a>
+                                    <a href="${match.team2?.link || '/otz2025/teams/RWE'}" 
+                                       class="text-[#ffffff] light:text-[#111827] hover:text-[#10b981] light:hover:text-[#b91c1c]">
+                                       ${match.team2?.name || 'Team 2'}
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        <div class="date">${match.date || 'Дата уточняется'}</div>
+                        <div class="date text-gray-400 light:text-gray-600 text-lg mt-4 text-center">${match.date || 'Дата уточняется'}</div>
                     </div>
                 `).join('');
                 
@@ -677,17 +414,16 @@
                 showError(matchesContainer, 'Ошибка обработки данных матчей');
             }
         }
-    
-        // ========== ФУНКЦИИ ДЛЯ НОВОСТЕЙ ========== //
+
+        // Функции для новостей
         async function loadNews() {
             const newsContainer = document.getElementById('newsContainer');
             if (!newsContainer) return;
             
             try {
-                newsContainer.innerHTML = '<div class="news-loading">Загрузка новостей...</div>';
+                newsContainer.innerHTML = '<div class="news-loading text-center text-gray-400 light:text-gray-600 text-xl py-10">Загрузка новостей...</div>';
                 
                 const response = await fetch(`${CONFIG.NEWS_DATA_URL}?t=${Date.now()}`);
-                
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 
                 const newsData = await response.json();
@@ -698,63 +434,64 @@
                 showError(newsContainer, 'Не удалось загрузить новости. Пожалуйста, попробуйте позже.');
             }
         }
-    
+
         function displayNews(newsData) {
             const newsContainer = document.getElementById('newsContainer');
             if (!newsContainer) return;
             
             if (!newsData || newsData.length === 0) {
                 newsContainer.innerHTML = `
-                    <div class="news-empty">
+                    <div class="news-empty text-center text-gray-400 light:text-gray-600 text-xl py-10">
                         Новостей пока нет. Следите за обновлениями!
                     </div>
                 `;
                 return;
             }
-    
+
             const sortedNews = [...newsData]
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 2);
-    
+
             newsContainer.innerHTML = sortedNews.map(news => `
-                <div class="news-item">
+                <div class="news-item bg-[#1f2937] light:bg-[#ffffff] p-6 rounded-xl shadow-lg hover-scale animate-fadeIn border border-transparent light:border-[#d97706]">
                     <img src="${news.image || 'img/NEWS_NO.png'}" 
                          alt="${news.title}" 
+                         class="w-full h-64 object-cover rounded-lg border-2 border-[#ffffff] light:border-[#b91c1c] mb-4"
                          onerror="this.src='img/NEWS_NO.png'">
                     <div class="text">
-                        <h3>${news.title}</h3>
-                        <p>${news.content.length > 200 ? 
+                        <h3 class="text-xl font-semibold mb-2 text-[#ffffff] light:text-[#b91c1c]">${news.title}</h3>
+                        <p class="text-base">${news.content.length > 200 ? 
                             news.content.substring(0, 200) + '...' : 
                             news.content}</p>
-                        <a href="/TestName/news" class="read-more">Читать далее</a>
+                        <a href="/otz2025/news" class="text-[#10b981] light:text-[#d97706] hover:text-[#34d399] light:hover:text-[#b91c1c] transition-colors mt-4 inline-block hover-scale">Читать далее</a>
                     </div>
                 </div>
             `).join('');
         }
-    
-        // ========== ОБЩИЕ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ========== //
+
+        // Вспомогательные функции
         function showError(container, message) {
             if (!container) return;
             container.innerHTML = `
-                <div class="error-message">
+                <div class="error-message text-center text-gray-400 light:text-gray-600 text-xl py-10">
                     ${message}
-                    <button onclick="location.reload()">Обновить</button>
+                    <button onclick="location.reload()" class="mt-4 bg-[#d97706] light:bg-[#d97706] text-[#ffffff] light:text-[#111827] px-4 py-2 rounded hover:bg-[#b91c1c] light:hover:bg-[#b91c1c] transition-colors">Обновить</button>
                 </div>
             `;
         }
-    
+
         function initScrollHeader() {
             const header = document.getElementById('header');
             if (header) {
                 window.addEventListener('scroll', () => {
-                    header.classList.toggle('scrolled', window.scrollY > 50);
+                    header.classList.toggle('bg-opacity-70', window.scrollY > 50);
                 });
             }
         }
-    
+
         function initFooterEasterEgg() {
             const footerText = document.querySelector('footer p');
-            const hiddenLink = document.querySelector('footer .hidden');
+            const hiddenLink = document.getElementById('easter-egg');
             
             if (footerText && hiddenLink) {
                 footerText.addEventListener('click', () => {
@@ -763,6 +500,66 @@
                 });
             }
         }
+
+        function initThemeToggle() {
+            const toggleButton = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const body = document.body;
+            const hero = document.getElementById('hero');
+            
+            // Проверяем сохранённую тему
+            if (localStorage.getItem('theme') === 'light') {
+                body.classList.add('light');
+                themeIcon.innerHTML = `
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 2h2v8h-2V8zm-4 4h8v2H7v-2z"/>
+                `;
+                themeIcon.setAttribute('fill', '#d97706');
+                hero.style.backgroundImage = "url('img/OTZ.png')";
+            } else {
+                body.classList.remove('light');
+                themeIcon.innerHTML = `
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 2h2v8h-2V8zm-4 4h8v2H7v-2z"/>
+                `;
+                themeIcon.setAttribute('fill', '#10b981');
+                hero.style.backgroundImage = "url('img/OTZT.jpg')";
+            }
+
+            toggleButton.addEventListener('click', () => {
+                body.classList.toggle('light');
+                const isLightTheme = body.classList.contains('light');
+                if (isLightTheme) {
+                    themeIcon.innerHTML = `
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 2h2v8h-2V8zm-4 4h8v2H7v-2z"/>
+                    `;
+                    themeIcon.setAttribute('fill', '#d97706');
+                    hero.style.backgroundImage = "url('img/OTZ.png')";
+                } else {
+                    themeIcon.innerHTML = `
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 2h2v8h-2V8zm-4 4h8v2H7v-2z"/>
+                    `;
+                    themeIcon.setAttribute('fill', '#10b981');
+                    hero.style.backgroundImage = "url('img/OTZT.jpg')";
+                }
+                localStorage.setItem('theme', isLightTheme ? 'light' : 'dark');
+            });
+        }
+
+        function initHamburgerMenu() {
+            const hamburger = document.getElementById('hamburger');
+            const nav = document.getElementById('nav');
+            
+            hamburger.addEventListener('click', () => {
+                hamburger.classList.toggle('active');
+                nav.classList.toggle('active');
+            });
+        }
+
+        function updateHeroImage() {
+            const hero = document.getElementById('hero');
+            const isLightTheme = document.body.classList.contains('light');
+            hero.style.backgroundImage = isLightTheme ? "url('img/OTZ.png')" : "url('img/OTZT.jpg')";
+        }
     </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9324ccb2b9f2bcda',t:'MTc0NDk4NTk5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 </body>
 </html>
